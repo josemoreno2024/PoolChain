@@ -3,7 +3,7 @@
     display: inline-block;
     margin-left: 8px;
     pointer-events: none;
-    z-index: 99999;
+    z-index: 1000;
 }
 
 .tooltip-trigger {
@@ -22,7 +22,7 @@
     transition: all 0.3s ease;
     box-shadow: 0 1px 4px rgba(102, 126, 234, 0.2);
     position: relative;
-    z-index: 100000;
+    z-index: 1001;
     pointer-events: auto !important;
 }
 
@@ -42,7 +42,7 @@
     line-height: 1.5;
     max-width: 260px;
     min-width: 180px;
-    z-index: 100001;
+    z-index: 1002;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
     border: 1px solid rgba(102, 126, 234, 0.3);
     backdrop-filter: blur(8px);
@@ -140,12 +140,12 @@
 /* CRITICAL FIX: Ensure tooltips are always clickable */
 .tooltip-container {
     pointer-events: none !important;
-    z-index: 999999 !important;
+    z-index: 1000 !important;
 }
 
 .tooltip-trigger {
     pointer-events: auto !important;
-    z-index: 999999 !important;
+    z-index: 1001 !important;
 }
 
 .tooltip-content {

@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { useDisconnect } from 'wagmi'
+import { useDisconnect, useAccount } from 'wagmi'
 import { useSanDigital } from '../web3/hooks/useSanDigital'
 import { useClaimHistory } from '../web3/hooks/useClaimHistory'
 import { formatUnits } from 'viem'
@@ -8,9 +8,14 @@ import './Dashboard.css'
 import StatCard from './StatCard'
 import AggregatedPositionCard from './AggregatedPositionCard'
 import Tooltip from './Tooltip'
+import SuccessToast from './SuccessToast'
+import ErrorModal from './ErrorModal'
+import TransactionExplorer from './TransactionExplorer'
+import ProcessingModal from './ProcessingModal'
 
 export default function Dashboard({ userAddress, tierConfig }) {
     const navigate = useNavigate()
+    const { chain } = useAccount()
     const {
         // ... (resto de props)
         userPositionIds,
@@ -43,12 +48,16 @@ export default function Dashboard({ userAddress, tierConfig }) {
         refetchActivos,
         refetchUSDT,
         refetchAllowance,
+        totalWithdrawn, // Para 4Funds: total retirado del sistema
     } = useSanDigital(userAddress, tierConfig)
 
-    // Leer historial de claims desde eventos (sin gas)
+    // Leer historial de claims desde eventos (sin gas) - Solo para tiers que no sean 4funds
     const { totalClaimed, claimCount, isLoading: isLoadingHistory } = useClaimHistory(userAddress)
 
     const [isRefreshing, setIsRefreshing] = useState(false)
+    const [successMessage, setSuccessMessage] = useState(null)
+    const [error, setError] = useState(null)
+    const [isProcessing, setIsProcessing] = useState(false)
 
     // Cleanup al desmontar - importante para aislar estado entre tiers
     useEffect(() => {
@@ -59,10 +68,50 @@ export default function Dashboard({ userAddress, tierConfig }) {
         }
     }, [tierConfig])
 
+
+    // Mostrar ProcessingModal cuando la transacción está pendiente
+    useEffect(() => {
+        let timeoutId
+
+        if (isPending || isConfirming) {
+            setIsProcessing(true)
+
+            // Timeout de seguridad: cerrar modal después de 30 segundos
+            timeoutId = setTimeout(() => {
+                setIsProcessing(false)
+                setError({
+                    title: 'Tiempo de espera agotado',
+                    message: 'La transacción tardó demasiado en procesarse.',
+                    details: 'Por favor, verifica tu wallet y vuelve a intentarlo. Si rechazaste la transacción, simplemente intenta de nuevo.'
+                })
+            }, 30000)
+        } else if (isSuccess) {
+            // Cerrar ProcessingModal cuando la transacción es exitosa
+            setIsProcessing(false)
+            if (timeoutId) clearTimeout(timeoutId)
+        } else if (!isPending && !isConfirming && !isSuccess && isProcessing) {
+            // Si no está pending, ni confirming, ni success, pero el modal está abierto
+            // significa que el usuario rechazó o la transacción falló
+            setIsProcessing(false)
+            if (timeoutId) clearTimeout(timeoutId)
+            setError({
+                title: 'Transacción Cancelada',
+                message: 'La transacción fue rechazada o cancelada.',
+                details: 'Verifica que tengas suficiente ETH para gas y que hayas aprobado la transacción en MetaMask. Si necesitas ETH para gas, puedes obtenerlo en un faucet de Sepolia.'
+            })
+        }
+
+        return () => {
+            if (timeoutId) clearTimeout(timeoutId)
+        }
+    }, [isPending, isConfirming, isSuccess, isProcessing])
+
     // Refetch cuando la transacción es exitosa
     useEffect(() => {
         if (isSuccess) {
             console.log('✅ Transacción exitosa, refetching datos...')
+            // Mostrar mensaje de éxito
+            setSuccessMessage('¡Transacción exitosa! Los datos se actualizarán en unos segundos...')
             // Mostrar indicador INMEDIATAMENTE
             setIsRefreshing(true)
 
@@ -300,6 +349,12 @@ export default function Dashboard({ userAddress, tierConfig }) {
                             value={totalCompletedCycles !== undefined ? Number(totalCompletedCycles) : '...'}
                             tooltip="Total de posiciones que han completado su ciclo (40 USDT) desde el inicio del contrato. Contador histórico acumulativo."
                         />
+                        <StatCard
+                            label="💰 Total Pagado (Sistema)"
+                            value={totalWithdrawn ? `${formatUnits(totalWithdrawn, 6)} USDT` : '0 USDT'}
+                            highlight={totalWithdrawn && totalWithdrawn > 0n}
+                            tooltip="Total de USDT que el sistema ha pagado a TODOS los usuarios desde el inicio. Incluye todos los auto-exits completados."
+                        />
                     </div>
                 </section>
 
@@ -323,10 +378,12 @@ export default function Dashboard({ userAddress, tierConfig }) {
                             tooltip="Número de posiciones que TÚ has completado (llegaron a 40 USDT). Estas posiciones ya no reciben más participaciones."
                         />
                         <StatCard
-                            label="💰 Total Histórico Recibido"
-                            value={isLoadingHistory ? '...' : `${totalClaimed} USDT`}
-                            highlight={parseFloat(totalClaimed) > 0}
-                            tooltip={`Total que has cobrado desde que empezaste. Basado en ${claimCount} claims registrados en la blockchain.`}
+                            label="💰 Tu Total Recibido"
+                            value={closedPositionsCount !== undefined && closedPositionsCount > 0
+                                ? `${Number(closedPositionsCount) * 20} USDT`
+                                : (closedPositionsCount === undefined ? '...' : '0 USDT')}
+                            highlight={closedPositionsCount !== undefined && closedPositionsCount > 0}
+                            tooltip="Total de USDT que TÚ has recibido en auto-exits. Cada ciclo cerrado = 20 USDT."
                         />
                     </div>
                 </section>
@@ -345,9 +402,9 @@ export default function Dashboard({ userAddress, tierConfig }) {
                                     onClick={approveUSDT}
                                     disabled={isPending || isConfirming}
                                 >
-                                    {isPending || isConfirming ? 'Procesando...' : '1. Aprobar USDT'}
+                                    {isPending || isConfirming ? 'Procesando...' : '1. Aprobar Contrato'}
                                 </button>
-                                <Tooltip text="Autoriza al contrato a usar tus USDT. Es un paso de seguridad estándar en blockchain. Solo necesitas hacerlo una vez." position="right" />
+                                <Tooltip text={`Debes aprobar desde MetaMask el uso de ${tierConfig?.entry || 10} USDT para activar tu posición en SanDigital. Este es un paso de seguridad estándar en blockchain. Solo necesitas hacerlo una vez.`} position="right" />
                             </div>
                         ) : (
                             <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
@@ -360,10 +417,13 @@ export default function Dashboard({ userAddress, tierConfig }) {
                                         ? 'Procesando...'
                                         : `➕ Nueva Posición (${tierConfig?.entry || 10} USDT)`}
                                 </button>
-                                <Tooltip text="Crea una nueva posición con 20 USDT. Cada posición acumula recompensas independientemente. Sin límite de posiciones." position="right" />
+                                <Tooltip text={`Crea una nueva posición con ${tierConfig?.entry || 10} USDT. Cada posición acumula recompensas independientemente. Sin límite de posiciones.`} position="right" />
                             </div>
                         )}
                     </div>
+
+                    {/* Transaction Explorer */}
+                    <TransactionExplorer userAddress={userAddress} chainId={chain?.id} />
 
                 </section>
 
@@ -430,14 +490,27 @@ export default function Dashboard({ userAddress, tierConfig }) {
                     </div>
                 )}
 
-                {/* Status Messages */}
-                {isSuccess && (
-                    <div className="success-message">
-                        ✅ Transacción exitosa!
-                        <br />
-                        Los datos se actualizarán en unos segundos...
-                    </div>
-                )}
+                {/* Processing Modal */}
+                <ProcessingModal
+                    isOpen={isProcessing}
+                    message="Tu transacción se está registrando en la blockchain. Esto puede tomar unos segundos."
+                />
+
+                {/* Success Toast */}
+                <SuccessToast
+                    isVisible={successMessage !== null}
+                    message={successMessage || ''}
+                    onClose={() => setSuccessMessage(null)}
+                />
+
+                {/* Error Modal */}
+                <ErrorModal
+                    isOpen={error !== null}
+                    onClose={() => setError(null)}
+                    title={error?.title || 'Error'}
+                    message={error?.message || 'Ha ocurrido un error'}
+                    details={error?.details}
+                />
             </div>
         </div >
     )

@@ -1,0 +1,175 @@
+🔬 SIMULACIÓN DE EQUILIBRIO - SanDigital 4Funds
+
+================================================================================
+PARÁMETROS:
+================================================================================
+Entry Amount: 10 USDT
+Exit Amount: 20 USDT
+Min Balance for Exit: 20 USDT
+Max Balance for Exit: 40 USDT
+
+Distribution:
+  - Keeper Fund: 5%
+  - Turn Payment: 35%
+  - Global Distribution: 55%
+  - Operational Fund: 10%
+
+================================================================================
+SIMULANDO 100 JOINS...
+================================================================================
+
+Join #1:
+  Active Positions: 1
+  Completed Cycles: 0
+  Total Deposited: 10.00 USDT
+  Total Withdrawn: 0.00 USDT
+  Net Flow: 10.00 USDT
+  Avg Balance/Position: 5.23 USDT
+
+Join #2:
+  Active Positions: 2
+  Completed Cycles: 0
+  Total Deposited: 20.00 USDT
+  Total Withdrawn: 0.00 USDT
+  Net Flow: 20.00 USDT
+  Avg Balance/Position: 6.89 USDT
+
+Join #3:
+  Active Positions: 3
+  Completed Cycles: 0
+  Total Deposited: 30.00 USDT
+  Total Withdrawn: 0.00 USDT
+  Net Flow: 30.00 USDT
+  Avg Balance/Position: 7.44 USDT
+
+Join #4:
+  Active Positions: 3
+  Completed Cycles: 1
+  Total Deposited: 40.00 USDT
+  Total Withdrawn: 20.00 USDT
+  Net Flow: 20.00 USDT
+  Avg Balance/Position: 3.34 USDT
+
+Join #5:
+  Active Positions: 4
+  Completed Cycles: 1
+  Total Deposited: 50.00 USDT
+  Total Withdrawn: 20.00 USDT
+  Net Flow: 30.00 USDT
+  Avg Balance/Position: 4.86 USDT
+
+Join #10:
+  Active Positions: 8
+  Completed Cycles: 2
+  Total Deposited: 100.00 USDT
+  Total Withdrawn: 40.00 USDT
+  Net Flow: 60.00 USDT
+  Avg Balance/Position: 5.27 USDT
+
+Join #20:
+  Active Positions: 15
+  Completed Cycles: 5
+  Total Deposited: 200.00 USDT
+  Total Withdrawn: 100.00 USDT
+  Net Flow: 100.00 USDT
+  Avg Balance/Position: 4.51 USDT
+
+Join #30:
+  Active Positions: 22
+  Completed Cycles: 8
+  Total Deposited: 300.00 USDT
+  Total Withdrawn: 160.00 USDT
+  Net Flow: 140.00 USDT
+  Avg Balance/Position: 4.24 USDT
+
+Join #40:
+  Active Positions: 29
+  Completed Cycles: 11
+  Total Deposited: 400.00 USDT
+  Total Withdrawn: 220.00 USDT
+  Net Flow: 180.00 USDT
+  Avg Balance/Position: 3.97 USDT
+
+Join #50:
+  Active Positions: 36
+  Completed Cycles: 14
+  Total Deposited: 500.00 USDT
+  Total Withdrawn: 280.00 USDT
+  Net Flow: 220.00 USDT
+  Avg Balance/Position: 3.92 USDT
+
+Join #60:
+  Active Positions: 44
+  Completed Cycles: 16
+  Total Deposited: 600.00 USDT
+  Total Withdrawn: 320.00 USDT
+  Net Flow: 280.00 USDT
+  Avg Balance/Position: 4.31 USDT
+
+Join #70:
+  Active Positions: 51
+  Completed Cycles: 19
+  Total Deposited: 700.00 USDT
+  Total Withdrawn: 380.00 USDT
+  Net Flow: 320.00 USDT
+  Avg Balance/Position: 4.22 USDT
+
+Join #80:
+  Active Positions: 58
+  Completed Cycles: 22
+  Total Deposited: 800.00 USDT
+  Total Withdrawn: 440.00 USDT
+  Net Flow: 360.00 USDT
+  Avg Balance/Position: 4.15 USDT
+
+Join #90:
+  Active Positions: 65
+  Completed Cycles: 25
+  Total Deposited: 900.00 USDT
+  Total Withdrawn: 500.00 USDT
+  Net Flow: 400.00 USDT
+  Avg Balance/Position: 4.09 USDT
+
+Join #100:
+  Active Positions: 72
+  Completed Cycles: 28
+  Total Deposited: 1000.00 USDT
+  Total Withdrawn: 560.00 USDT
+  Net Flow: 440.00 USDT
+  Avg Balance/Position: 4.05 USDT
+
+================================================================================
+ANÁLISIS DE EQUILIBRIO
+================================================================================
+
+📊 ESTADO FINAL (después de 100 joins):
+  Active Positions: 72
+  Completed Cycles: 28
+  Total Deposited: 1000.00 USDT
+  Total Withdrawn: 560.00 USDT
+  Net Flow: 440.00 USDT
+  Net Flow Ratio: 44.00%
+
+📈 TENDENCIA:
+  Position Growth Rate: 7100.00%
+  Net Flow Trend: ↑ 430.00 USDT
+
+🎯 CONCLUSIÓN:
+  ⚠️  La cola FIFO está CRECIENDO
+  📈 Posiciones activas: 72 (cerca del límite de 30)
+  💡 Recomendación: Ajustar parámetros para aumentar salidas
+
+================================================================================
+💡 INTERPRETACIÓN
+================================================================================
+
+Si el sistema alcanza equilibrio:
+  ✅ Las posiciones activas se estabilizan en un número constante
+  ✅ Por cada join, eventualmente hay un auto-exit
+  ✅ El net flow se acerca a cero (entradas ≈ salidas)
+
+Si la cola crece indefinidamente:
+  ❌ Las posiciones activas siguen aumentando
+  ❌ Los auto-exits no ocurren lo suficientemente rápido
+  ❌ El net flow sigue siendo muy positivo
+

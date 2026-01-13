@@ -22,6 +22,7 @@
     "author": "",
     "license": "MIT",
     "devDependencies": {
+        "@chainlink/contracts": "^1.4.0",
         "@nomicfoundation/hardhat-toolbox": "^5.0.0",
         "hardhat": "^2.22.18"
     },

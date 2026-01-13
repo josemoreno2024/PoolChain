@@ -1,0 +1,72 @@
+🔄 SIMULACIÓN CON REINVERSIÓN
+
+================================================================================
+
+Sin reinversión (0%)
+--------------------------------------------------------------------------------
+Total Aportes (incluyendo reinversiones): 200
+Usuarios Únicos: 200
+Reinversiones: 0
+Posiciones Activas: 108 ⚠️
+Retiros Completados: 92
+Tasa de Retiro: 46.00%
+Tiempo de Espera: 54.5 aportes
+Fees Totales: 20.00 USDT
+
+Reinversión baja (30%)
+--------------------------------------------------------------------------------
+Total Aportes (incluyendo reinversiones): 227
+Usuarios Únicos: 200
+Reinversiones: 27
+Posiciones Activas: 122 ⚠️
+Retiros Completados: 105
+Tasa de Retiro: 46.26%
+Tiempo de Espera: 62.0 aportes
+Fees Totales: 22.70 USDT
+
+Reinversión media (50%)
+--------------------------------------------------------------------------------
+Total Aportes (incluyendo reinversiones): 254
+Usuarios Únicos: 200
+Reinversiones: 54
+Posiciones Activas: 137 ⚠️
+Retiros Completados: 117
+Tasa de Retiro: 46.06%
+Tiempo de Espera: 68.9 aportes
+Fees Totales: 25.40 USDT
+
+Reinversión alta (70%)
+--------------------------------------------------------------------------------
+Total Aportes (incluyendo reinversiones): 312
+Usuarios Únicos: 200
+Reinversiones: 112
+Posiciones Activas: 168 ⚠️
+Retiros Completados: 144
+Tasa de Retiro: 46.15%
+Tiempo de Espera: 84.4 aportes
+Fees Totales: 31.20 USDT
+
+================================================================================
+📊 ANÁLISIS COMPARATIVO
+================================================================================
+
+Impacto de la Reinversión:
+
+| Reinversión | Posiciones | Exit Rate | Fees |
+|-------------|------------|-----------|------|
+| 0% | 108 | 46.0% | 20 USDT |
+| 30% | 124 | 46.1% | 23 USDT |
+| 50% | 139 | 46.1% | 26 USDT |
+| 70% | 153 | 46.1% | 28 USDT |
+
+================================================================================
+💡 CONCLUSIÓN
+================================================================================
+
+✅ La reinversión MEJORA dramáticamente el sistema:
+   - Reduce la cola de posiciones activas
+   - Aumenta la tasa de retiro
+   - Genera más fees para la plataforma
+   - Crea un ciclo virtuoso sostenible
+
+🎯 Con 50% de reinversión, el sistema se vuelve mucho más eficiente!

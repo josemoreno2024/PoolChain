@@ -40,7 +40,29 @@ export default function Welcome({ onConnectWallet, isConnected }) {
                             </div>
                         </div>
 
-                        {/* Botón de Conexión */}
+                        {/* Enlace a Información Completa */}
+                        <div className="info-link-section" style={{ textAlign: 'center', marginTop: '20px', marginBottom: '-90px' }}>
+                            <a
+                                href="/tier-info"
+                                style={{
+                                    display: 'inline-block',
+                                    padding: '12px 24px',
+                                    background: 'rgba(255, 255, 255, 0.1)',
+                                    border: '1px solid rgba(255, 255, 255, 0.2)',
+                                    borderRadius: '8px',
+                                    color: '#fff',
+                                    textDecoration: 'none',
+                                    fontSize: '14px',
+                                    fontWeight: '500',
+                                    transition: 'all 0.3s ease'
+                                }}
+                            >
+                                📚 Ver Información Completa y FAQ →
+                            </a>
+                        </div>
+
+                        {/* Botón de Conexión - REMOVIDO: redundante con Header */}
+                        {/* 
                         {!isConnected ? (
                             <div className="connect-section">
                                 <div className="connect-button-wrapper">
@@ -81,6 +103,7 @@ export default function Welcome({ onConnectWallet, isConnected }) {
                                 </a>
                             </div>
                         )}
+                        */}
                     </div>
                 </div>
             </section>
@@ -106,19 +129,19 @@ export default function Welcome({ onConnectWallet, isConnected }) {
                             <p>Contratos inteligentes auditados en opBNB. Código inmutable y verificable. Sin posibilidad de manipulación.</p>
                         </div>
                         <div className="info-card info-card-highlight">
-                            <div className="info-icon">⭐</div>
-                            <h3>Sistema Landa™</h3>
-                            <p><strong>Innovación Exclusiva</strong> - Gestión dinámica de acumulación progresiva. Distribuye aportes priorizando a quienes están más cerca del umbral. Flujo constante, rotación natural, sostenibilidad matemática.</p>
-                            <div className="rights-badge">© Derechos Reservados</div>
+                            <div className="info-icon">⚡</div>
+                            <h3>Red opBNB</h3>
+                            <p><strong>Costos Ultra Bajos</strong> - Blockchain de alto rendimiento optimizada para transacciones rápidas y económicas. Gas mínimo, confirmaciones instantáneas, escalabilidad garantizada. Ideal para participación masiva.</p>
+                            <div className="rights-badge">Powered by BNB Chain</div>
                         </div>
                     </div>
                 </div>
             </section>
 
-            {/* ¿Por qué NO es una pirámide? */}
+            {/* ¿Por qué es diferente? */}
             <section className="anti-pyramid-section">
                 <div className="welcome-container">
-                    <h2>¿Por qué SAN Digital NO es una Pirámide?</h2>
+                    <h2>¿Por qué SAN Digital es Diferente?</h2>
                     <div className="anti-pyramid-grid">
                         <div className="anti-pyramid-card">
                             <div className="card-number">1</div>
@@ -137,8 +160,8 @@ export default function Welcome({ onConnectWallet, isConnected }) {
                         </div>
                         <div className="anti-pyramid-card">
                             <div className="card-number">4</div>
-                            <h3>No Requiere Reclutamiento</h3>
-                            <p>Las pirámides obligan a reclutar. Aquí participas individualmente. No necesitas convencer a nadie. El sistema funciona por participación voluntaria y descentralizada.</p>
+                            <h3>Sistema Lineal por Turno</h3>
+                            <p>El sistema funciona de forma lineal, cola por turno de forma global. Cualquier registro comprime la dispersión y activa el contrato a nivel mundial. Participación individual, sin necesidad de reclutar. Sistema descentralizado y automático.</p>
                         </div>
                     </div>
                     <div className="key-difference">

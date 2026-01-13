@@ -17,13 +17,12 @@ export default function AggregatedPositionCard({ totalBalance, activeCount, onCl
             </div>
 
             <div className="position-body">
-                {/* Balance Total */}
                 <div className="position-balance">
                     <div className="balance-label">
-                        Saldo Acumulado Total
+                        Balance Pendiente
                         <Tooltip text={hasActivePositions
-                            ? `Total acumulado de tus ${Number(activeCount)} posiciones activas.`
-                            : 'Tu saldo total disponible para retirar. Aunque no tengas posiciones activas, puedes cobrar lo acumulado.'
+                            ? `Balance acumulado de tus ${Number(activeCount)} posiciones activas. Se actualiza con cada nueva transacción en el sistema.`
+                            : 'Tu saldo disponible para retirar. Aunque no tengas posiciones activas, puedes cobrar lo acumulado.'
                         } />
                     </div>
                     <div className="balance-value">{balance} USDT</div>

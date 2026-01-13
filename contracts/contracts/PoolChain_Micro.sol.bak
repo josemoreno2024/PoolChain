@@ -1,0 +1,348 @@
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.20;
+
+import "@chainlink/contracts/src/v0.8/vrf/dev/VRFConsumerBaseV2Plus.sol";
+import "@chainlink/contracts/src/v0.8/vrf/dev/libraries/VRFV2PlusClient.sol";
+import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
+import "@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
+
+/**
+ * @title PoolChain_Micro
+ * @notice Raffle contract where 100% of participants win something
+ * @dev Micro tier: 2 USDT entry, 100 slots, 2% gas fee, 30/30/20/20 distribution
+ */
+contract PoolChain_Micro is VRFConsumerBaseV2Plus, Ownable, ReentrancyGuard {
+    using SafeERC20 for IERC20;
+
+    // ============ Constants ============
+    
+    uint256 public constant TICKET_PRICE = 2_000000; // 2 USDT (6 decimals)
+    uint256 public constant MAX_PARTICIPANTS = 100;
+    uint256 public constant GAS_FEE_PERCENT = 2; // 2% gas fee
+    
+    // Winner distribution (100% of participants win)
+    uint256 public constant GROUP_A_COUNT = 10;  // 30% of net fund
+    uint256 public constant GROUP_B_COUNT = 20;  // 30% of net fund
+    uint256 public constant GROUP_C_COUNT = 30;  // 20% of net fund
+    uint256 public constant GROUP_D_COUNT = 40;  // 20% of net fund
+    
+    // Prize percentages (of net fund after gas)
+    uint256 public constant GROUP_A_PERCENT = 30;
+    uint256 public constant GROUP_B_PERCENT = 30;
+    uint256 public constant GROUP_C_PERCENT = 20;
+    uint256 public constant GROUP_D_PERCENT = 20;
+
+    // ============ State Variables ============
+    
+    IERC20 public immutable usdt;
+    address public platformWallet;
+    
+    uint256 public currentRound;
+    address[] public participants;
+    mapping(address => bool) public hasParticipated;
+    mapping(address => uint256) public claimable;
+    
+    // VRF Configuration
+    uint256 public s_subscriptionId;
+    bytes32 public keyHash;
+    uint32 public callbackGasLimit = 500000;
+    uint16 public requestConfirmations = 3;
+    uint32 public numWords = 4; // 4 random numbers (one per group)
+    
+    // Round state
+    bool public poolFilled;
+    bool public winnersSelected;
+    uint256 public vrfRequestId;
+    
+    // Winners storage
+    address[] public groupA;
+    address[] public groupB;
+    address[] public groupC;
+    address[] public groupD;
+
+    // ============ Events ============
+    
+    event TicketPurchased(address indexed user, uint256 round, uint256 position, uint256 timestamp);
+    event PoolFilled(uint256 round, uint256 totalParticipants, uint256 timestamp);
+    event VRFRequested(uint256 indexed requestId, uint256 round, uint256 timestamp);
+    event RandomnessFulfilled(uint256 indexed requestId, uint256[] randomWords);
+    event WinnersSelected(
+        uint256 round,
+        address[] groupA,
+        address[] groupB,
+        address[] groupC,
+        address[] groupD,
+        uint256 timestamp
+    );
+    event PrizeClaimed(address indexed user, uint256 amount, uint256 timestamp);
+    event RoundReset(uint256 newRound, uint256 timestamp);
+
+    // ============ Constructor ============
+    
+    constructor(
+        address _vrfCoordinator,
+        address _usdt,
+        address _platformWallet,
+        uint256 _subscriptionId,
+        bytes32 _keyHash
+    ) VRFConsumerBaseV2Plus(_vrfCoordinator) Ownable(msg.sender) {
+        require(_usdt != address(0), "Invalid USDT address");
+        require(_platformWallet != address(0), "Invalid platform wallet");
+        
+        usdt = IERC20(_usdt);
+        platformWallet = _platformWallet;
+        s_subscriptionId = _subscriptionId;
+        keyHash = _keyHash;
+        currentRound = 1;
+    }
+
+    // ============ Main Functions ============
+    
+    /**
+     * @notice Buy a raffle ticket
+     */
+    function buyTicket() external nonReentrant {
+        require(!poolFilled, "Pool is full");
+        require(participants.length < MAX_PARTICIPANTS, "Max participants reached");
+        require(!hasParticipated[msg.sender], "Already participated");
+        
+        // Transfer USDT from user
+        usdt.safeTransferFrom(msg.sender, address(this), TICKET_PRICE);
+        
+        // Add participant
+        participants.push(msg.sender);
+        hasParticipated[msg.sender] = true;
+        
+        emit TicketPurchased(msg.sender, currentRound, participants.length, block.timestamp);
+        
+        // If pool is full, request VRF
+        if (participants.length == MAX_PARTICIPANTS) {
+            poolFilled = true;
+            emit PoolFilled(currentRound, MAX_PARTICIPANTS, block.timestamp);
+            _requestRandomness();
+        }
+    }
+    
+    /**
+     * @notice Request random numbers from Chainlink VRF
+     */
+    function _requestRandomness() internal {
+        vrfRequestId = s_vrfCoordinator.requestRandomWords(
+            VRFV2PlusClient.RandomWordsRequest({
+                keyHash: keyHash,
+                subId: s_subscriptionId,
+                requestConfirmations: requestConfirmations,
+                callbackGasLimit: callbackGasLimit,
+                numWords: numWords,
+                extraArgs: VRFV2PlusClient._argsToBytes(
+                    VRFV2PlusClient.ExtraArgsV1({nativePayment: false})
+                )
+            })
+        );
+        
+        emit VRFRequested(vrfRequestId, currentRound, block.timestamp);
+    }
+    
+    /**
+     * @notice Callback function called by VRF Coordinator
+     */
+    function fulfillRandomWords(
+        uint256 requestId,
+        uint256[] calldata randomWords
+    ) internal override {
+        require(requestId == vrfRequestId, "Invalid request ID");
+        require(!winnersSelected, "Winners already selected");
+        
+        emit RandomnessFulfilled(requestId, randomWords);
+        
+        _selectWinners(randomWords);
+        _distributePrizes();
+    }
+    
+    /**
+     * @notice Select winners using VRF random numbers
+     */
+    function _selectWinners(uint256[] memory randomWords) internal {
+        // Create a copy of participants for selection
+        address[] memory availableParticipants = new address[](MAX_PARTICIPANTS);
+        for (uint i = 0; i < MAX_PARTICIPANTS; i++) {
+            availableParticipants[i] = participants[i];
+        }
+        
+        uint256 remainingCount = MAX_PARTICIPANTS;
+        
+        // Select Group A (10 winners)
+        for (uint i = 0; i < GROUP_A_COUNT; i++) {
+            uint256 randomIndex = uint256(keccak256(abi.encode(randomWords[0], i))) % remainingCount;
+            groupA.push(availableParticipants[randomIndex]);
+            
+            // Remove selected participant
+            availableParticipants[randomIndex] = availableParticipants[remainingCount - 1];
+            remainingCount--;
+        }
+        
+        // Select Group B (20 winners)
+        for (uint i = 0; i < GROUP_B_COUNT; i++) {
+            uint256 randomIndex = uint256(keccak256(abi.encode(randomWords[1], i))) % remainingCount;
+            groupB.push(availableParticipants[randomIndex]);
+            
+            availableParticipants[randomIndex] = availableParticipants[remainingCount - 1];
+            remainingCount--;
+        }
+        
+        // Select Group C (30 winners)
+        for (uint i = 0; i < GROUP_C_COUNT; i++) {
+            uint256 randomIndex = uint256(keccak256(abi.encode(randomWords[2], i))) % remainingCount;
+            groupC.push(availableParticipants[randomIndex]);
+            
+            availableParticipants[randomIndex] = availableParticipants[remainingCount - 1];
+            remainingCount--;
+        }
+        
+        // Remaining participants go to Group D (40 winners)
+        for (uint i = 0; i < remainingCount; i++) {
+            groupD.push(availableParticipants[i]);
+        }
+        
+        winnersSelected = true;
+        emit WinnersSelected(currentRound, groupA, groupB, groupC, groupD, block.timestamp);
+    }
+    
+    /**
+     * @notice Distribute prizes to all winners
+     */
+    function _distributePrizes() internal {
+        uint256 totalPool = MAX_PARTICIPANTS * TICKET_PRICE;
+        uint256 gasFee = (totalPool * GAS_FEE_PERCENT) / 100;
+        uint256 netFund = totalPool - gasFee;
+        
+        // Transfer gas fee to platform
+        usdt.safeTransfer(platformWallet, gasFee);
+        
+        // Calculate prizes per group
+        uint256 groupATotal = (netFund * GROUP_A_PERCENT) / 100;
+        uint256 groupBTotal = (netFund * GROUP_B_PERCENT) / 100;
+        uint256 groupCTotal = (netFund * GROUP_C_PERCENT) / 100;
+        uint256 groupDTotal = (netFund * GROUP_D_PERCENT) / 100;
+        
+        uint256 prizeA = groupATotal / GROUP_A_COUNT; // 5.88 USDT
+        uint256 prizeB = groupBTotal / GROUP_B_COUNT; // 2.94 USDT
+        uint256 prizeC = groupCTotal / GROUP_C_COUNT; // 1.31 USDT
+        uint256 prizeD = groupDTotal / GROUP_D_COUNT; // 0.98 USDT
+        
+        // Assign prizes
+        for (uint i = 0; i < GROUP_A_COUNT; i++) {
+            claimable[groupA[i]] = prizeA;
+        }
+        for (uint i = 0; i < GROUP_B_COUNT; i++) {
+            claimable[groupB[i]] = prizeB;
+        }
+        for (uint i = 0; i < GROUP_C_COUNT; i++) {
+            claimable[groupC[i]] = prizeC;
+        }
+        for (uint i = 0; i < GROUP_D_COUNT; i++) {
+            claimable[groupD[i]] = prizeD;
+        }
+    }
+    
+    /**
+     * @notice Claim your prize
+     */
+    function claim() external nonReentrant {
+        uint256 amount = claimable[msg.sender];
+        require(amount > 0, "Nothing to claim");
+        
+        claimable[msg.sender] = 0;
+        usdt.safeTransfer(msg.sender, amount);
+        
+        emit PrizeClaimed(msg.sender, amount, block.timestamp);
+    }
+    
+    /**
+     * @notice Reset round and start new one (only owner)
+     */
+    function resetRound() external onlyOwner {
+        require(winnersSelected, "Winners not selected yet");
+        
+        // Clear participants
+        for (uint i = 0; i < participants.length; i++) {
+            hasParticipated[participants[i]] = false;
+        }
+        delete participants;
+        
+        // Clear winners
+        delete groupA;
+        delete groupB;
+        delete groupC;
+        delete groupD;
+        
+        // Reset state
+        poolFilled = false;
+        winnersSelected = false;
+        vrfRequestId = 0;
+        currentRound++;
+        
+        emit RoundReset(currentRound, block.timestamp);
+    }
+
+    // ============ View Functions ============
+    
+    function getParticipants() external view returns (address[] memory) {
+        return participants;
+    }
+    
+    function getParticipantCount() external view returns (uint256) {
+        return participants.length;
+    }
+    
+    function getGroupAWinners() external view returns (address[] memory) {
+        return groupA;
+    }
+    
+    function getGroupBWinners() external view returns (address[] memory) {
+        return groupB;
+    }
+    
+    function getGroupCWinners() external view returns (address[] memory) {
+        return groupC;
+    }
+    
+    function getGroupDWinners() external view returns (address[] memory) {
+        return groupD;
+    }
+    
+    function getClaimable(address user) external view returns (uint256) {
+        return claimable[user];
+    }
+    
+    function getCurrentPool() external view returns (uint256) {
+        return participants.length * TICKET_PRICE;
+    }
+    
+    function isPoolFilled() external view returns (bool) {
+        return poolFilled;
+    }
+    
+    function areWinnersSelected() external view returns (bool) {
+        return winnersSelected;
+    }
+
+    // ============ Admin Functions ============
+    
+    function updatePlatformWallet(address _newWallet) external onlyOwner {
+        require(_newWallet != address(0), "Invalid address");
+        platformWallet = _newWallet;
+    }
+    
+    function updateVRFConfig(
+        uint256 _subscriptionId,
+        bytes32 _keyHash,
+        uint32 _callbackGasLimit
+    ) external onlyOwner {
+        s_subscriptionId = _subscriptionId;
+        keyHash = _keyHash;
+        callbackGasLimit = _callbackGasLimit;
+    }
+}

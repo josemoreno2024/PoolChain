@@ -1,0 +1,170 @@
+.home-page {
+    min-height: calc(100vh - 80px);
+    padding: 4rem 2rem;
+    background: linear-gradient(to bottom, #0f172a, #1e293b);
+}
+
+.hero-section {
+    text-align: center;
+    margin-bottom: 4rem;
+}
+
+.hero-title {
+    font-size: 3rem;
+    font-weight: 800;
+    background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-bottom: 1rem;
+}
+
+.hero-subtitle {
+    font-size: 1.25rem;
+    color: #cbd5e1;
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.products-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 2rem;
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.product-card-gold {
+    background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+    border-radius: 20px;
+    padding: 2.5rem;
+    box-shadow: 0 10px 30px rgba(251, 191, 36, 0.5);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.product-card-gold:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 20px 40px rgba(251, 191, 36, 0.7);
+}
+
+.card-content {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    color: #0f172a;
+}
+
+.card-title-gold {
+    font-size: 2.5rem;
+    font-weight: 800;
+    margin-bottom: 1rem;
+    color: #0f172a;
+    text-shadow: 0 2px 10px rgba(15, 23, 42, 0.1);
+}
+
+.card-description-gold {
+    font-size: 1.2rem;
+    margin-bottom: 2rem;
+    color: #1e293b;
+    line-height: 1.6;
+    font-weight: 500;
+}
+
+.features-list {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 2rem 0;
+    flex-grow: 1;
+}
+
+.feature-item-gold {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+    font-size: 1.05rem;
+    color: #0f172a;
+}
+
+.feature-item-gold strong {
+    color: #0f172a;
+    font-weight: 800;
+}
+
+.check-icon-gold {
+    background: rgba(15, 23, 42, 0.2);
+    color: #0f172a;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    flex-shrink: 0;
+    font-size: 1.1rem;
+}
+
+.card-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.enter-btn-gold {
+    background: #0f172a;
+    color: #fbbf24;
+    padding: 1.2rem 2.5rem;
+    border-radius: 12px;
+    text-decoration: none;
+    font-weight: 800;
+    font-size: 1.2rem;
+    text-align: center;
+    transition: all 0.3s ease;
+    display: inline-block;
+    box-shadow: 0 6px 20px rgba(15, 23, 42, 0.4);
+    border: none;
+    cursor: pointer;
+    width: 100%;
+}
+
+.enter-btn-gold:hover {
+    transform: scale(1.05);
+    box-shadow: 0 8px 25px rgba(15, 23, 42, 0.6);
+    background: #1e293b;
+}
+
+.info-btn-gold {
+    background: rgba(15, 23, 42, 0.3);
+    color: #0f172a;
+    padding: 1rem 2rem;
+    border-radius: 12px;
+    text-decoration: none;
+    font-weight: 700;
+    font-size: 1.1rem;
+    text-align: center;
+    transition: all 0.3s ease;
+    display: inline-block;
+    border: 2px solid rgba(15, 23, 42, 0.5);
+}
+
+.info-btn-gold:hover {
+    background: rgba(15, 23, 42, 0.5);
+    transform: scale(1.02);
+}
+
+@media (max-width: 768px) {
+    .hero-title {
+        font-size: 2rem;
+    }
+
+    .product-card-gold {
+        padding: 2rem;
+    }
+
+    .card-title-gold {
+        font-size: 2rem;
+    }
+}

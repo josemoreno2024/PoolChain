@@ -2,6 +2,16 @@ import { useState } from 'react'
 import './NetworkGuide.css'
 
 const NETWORKS = {
+    opBNBTestnet: {
+        name: 'opBNB Testnet',
+        chainId: 5611,
+        rpcUrl: 'https://opbnb-testnet-rpc.bnbchain.org',
+        currency: 'BNB',
+        explorer: 'https://testnet.opbnbscan.com',
+        gas: 'GRATIS (testnet)',
+        recommended: true,
+        isTestnet: true
+    },
     opBNB: {
         name: 'opBNB Mainnet',
         chainId: 204,

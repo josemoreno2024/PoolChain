@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { useAccount, useConnect, useDisconnect } from 'wagmi'
 import Welcome from './components/Welcome'
@@ -11,6 +11,13 @@ import NetworkDetector from './components/NetworkDetector'
 import NetworkGuide from './components/NetworkGuide'
 import TierSelector from './components/TierSelector'
 import { TierPage } from './components/TierPage'
+import ErrorModal from './components/ErrorModal'
+import { Header } from './components/common/Header'
+import { HomePage } from './pages/HomePage'
+import { SanDigitalPage } from './pages/SanDigitalPage'
+import { PoolChainPage } from './pages/PoolChainPage'
+import { PoolChainInfo } from './components/PoolChainInfo'
+import { AddTestnetButton } from './components/AddTestnetButton'
 
 function App() {
     const { address, isConnected, chain } = useAccount()
@@ -38,6 +45,9 @@ function App() {
     const [showNetworkGuide, setShowNetworkGuide] = useState(false)
     const [defaultNetwork, setDefaultNetwork] = useState('opBNB')
 
+    // Estados para errores
+    const [error, setError] = useState(null)
+
     // Manejar conexión - mostrar selector de wallet
     const handleConnectClick = () => {
         setShowWalletSelector(true)
@@ -63,13 +73,33 @@ function App() {
     // AUTENTICACIÓN SIMPLIFICADA: Solo requiere wallet conectada
     const isAuthenticated = isConnected && userWantsToConnect
 
+    // Auto-aprobar si la wallet ya está conectada (evita que el usuario quede atrapado)
+    useEffect(() => {
+        if (isConnected && !userWantsToConnect) {
+            setUserWantsToConnect(true)
+        }
+    }, [isConnected, userWantsToConnect])
+
+    // Auto-cerrar modal de wallet cuando se conecta exitosamente
+    useEffect(() => {
+        if (isConnected && showWalletSelector) {
+            setShowWalletSelector(false)
+        }
+    }, [isConnected, showWalletSelector])
+
     return (
         <BrowserRouter>
+            {/* Botón flotante para agregar testnet */}
+            <AddTestnetButton />
+
+            {/* Header with navigation */}
+            <Header />
+
             {/* Botón de admin global - aparece cuando wallet de admin está conectada */}
             <GlobalAdminButton />
 
-            {/* Botón de desconexión - aparece cuando wallet está conectada */}
-            <DisconnectButton />
+            {/* Botón de desconexión - REMOVIDO: redundante con Header wallet button */}
+            {/* <DisconnectButton /> */}
 
             {/* Wallet Selector Modal */}
             <WalletSelector
@@ -87,23 +117,54 @@ function App() {
                 />
             )}
 
+            {/* Error Modal */}
+            <ErrorModal
+                isOpen={error !== null}
+                onClose={() => setError(null)}
+                title={error?.title}
+                message={error?.message}
+                details={error?.details}
+            />
+
             {/* Network Detector Banner (solo si conectado) */}
             {isConnected && (
                 <NetworkDetector onShowGuide={handleShowNetworkGuide} />
             )}
 
             <Routes>
-                {/* Ruta principal - Welcome o TierSelector según autenticación */}
+                {/* Ruta principal - HomePage con selección de productos */}
+                <Route path="/" element={<HomePage />} />
+
+                {/* SanDigital 4Funds - Selector de tiers */}
                 <Route
-                    path="/"
+                    path="/sandigital"
                     element={
                         isAuthenticated
-                            ? <TierSelector />
+                            ? <SanDigitalPage />
                             : <Welcome
                                 onConnectWallet={handleConnectClick}
                                 isConnected={isConnected}
                             />
                     }
+                />
+
+                {/* PoolChain Lottery */}
+                <Route
+                    path="/poolchain"
+                    element={
+                        isAuthenticated
+                            ? <PoolChainPage />
+                            : <Welcome
+                                onConnectWallet={handleConnectClick}
+                                isConnected={isConnected}
+                            />
+                    }
+                />
+
+                {/* PoolChain Information Page - Public */}
+                <Route
+                    path="/poolchain-info"
+                    element={<PoolChainInfo />}
                 />
 
                 {/* Ruta de Información/Educación */}

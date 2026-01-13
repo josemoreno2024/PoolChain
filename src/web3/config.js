@@ -2,7 +2,34 @@ import { http, createConfig, fallback } from 'wagmi'
 import { sepolia } from 'wagmi/chains'
 import { injected } from 'wagmi/connectors'
 
-// Definir opBNB chain
+// Definir opBNB Testnet chain
+export const opBNBTestnet = {
+    id: 5611,
+    name: 'opBNB Testnet',
+    network: 'opbnb-testnet',
+    nativeCurrency: {
+        decimals: 18,
+        name: 'BNB',
+        symbol: 'tBNB',
+    },
+    rpcUrls: {
+        default: {
+            http: ['https://opbnb-testnet-rpc.bnbchain.org'],
+        },
+        public: {
+            http: ['https://opbnb-testnet-rpc.bnbchain.org'],
+        },
+    },
+    blockExplorers: {
+        default: {
+            name: 'opBNBScan Testnet',
+            url: 'https://testnet.opbnbscan.com',
+        },
+    },
+    testnet: true,
+}
+
+// Definir opBNB Mainnet chain
 export const opBNB = {
     id: 204,
     name: 'opBNB Mainnet',
@@ -40,7 +67,7 @@ const noopStorage = {
 const alchemyKey = 'di9OyaKVjkEvKTA_AsdB7'
 
 export const config = createConfig({
-    chains: [sepolia, opBNB],
+    chains: [sepolia, opBNBTestnet, opBNB],
     connectors: [
         injected(),
     ],
@@ -54,6 +81,10 @@ export const config = createConfig({
             http('https://rpc.sepolia.org'),
             http('https://ethereum-sepolia-rpc.publicnode.com'),
             http('https://sepolia.drpc.org'),
+        ]),
+        [opBNBTestnet.id]: fallback([
+            http('https://opbnb-testnet-rpc.bnbchain.org'),
+            http('https://opbnb-testnet.nodereal.io/v1/e9a36765eb8a40b9bd12e680a1fd2bc5'),
         ]),
         [opBNB.id]: fallback([
             http('https://opbnb-mainnet-rpc.bnbchain.org'),

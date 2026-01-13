@@ -16,21 +16,29 @@ module.exports = {
         localhost: {
             url: "http://127.0.0.1:8545"
         },
-        sepolia: {
-            url: process.env.SEPOLIA_RPC_URL,
+        bscTestnet: {
+            url: "https://data-seed-prebsc-1-s1.binance.org:8545/",
             accounts: process.env.PRIVATE_KEY ? [process.env.PRIVATE_KEY] : [],
-            chainId: 11155111
+            chainId: 97,
+            gasPrice: 10000000000, // 10 gwei
         },
-        polygonAmoy: {
-            url: process.env.POLYGON_AMOY_RPC_URL,
+        opBNBTestnet: {
+            url: "https://opbnb-testnet-rpc.bnbchain.org",
             accounts: process.env.PRIVATE_KEY ? [process.env.PRIVATE_KEY] : [],
-            chainId: 80002
+            chainId: 5611,
+            gasPrice: 1000000000, // 1 gwei
+        },
+        opBNB: {
+            url: "https://opbnb-mainnet-rpc.bnbchain.org",
+            accounts: process.env.PRIVATE_KEY ? [process.env.PRIVATE_KEY] : [],
+            chainId: 204,
+            gasPrice: 1000000000, // 1 gwei
         }
     },
     etherscan: {
         apiKey: {
-            sepolia: process.env.ETHERSCAN_API_KEY || "",
-            polygonAmoy: process.env.POLYGONSCAN_API_KEY || ""
+            opBNBTestnet: process.env.OPBNBSCAN_API_KEY || "",
+            opBNB: process.env.OPBNBSCAN_API_KEY || ""
         }
     }
 };

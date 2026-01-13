@@ -1,15 +1,8 @@
-import { useReadContract, useWriteContract, useWaitForTransactionReceipt } from 'wagmi'
+import { useReadContract, useReadContracts, useWriteContract, useWaitForTransactionReceipt } from 'wagmi'
 import { parseUnits } from 'viem'
 import addresses from '../../contracts/addresses.json'
-import SanDigitalABI from '../../contracts/SanDigital2026ABI.json'
+import SanDigitalABI from '../../contracts/SanDigital4FundsKeeperABI.json'
 import MockUSDTABI from '../../contracts/MockUSDTABI.json'
-
-console.log('🔍 ABIs loaded:', {
-    SanDigitalABI: Array.isArray(SanDigitalABI) && SanDigitalABI.length > 0 ? `OK (${SanDigitalABI.length} items)` : 'FAIL',
-    MockUSDTABI: Array.isArray(MockUSDTABI) && MockUSDTABI.length > 0 ? `OK (${MockUSDTABI.length} items)` : 'FAIL',
-    mockUSDTAddress: addresses.mockUSDT,
-    sanDigitalAddress: addresses.sanDigital2026
-})
 
 /**
  * Hook para interactuar con contratos SanDigital multi-tier
@@ -27,7 +20,6 @@ export function useSanDigital(userAddress, tierConfig = null) {
 
         // IMPORTANTE: Usar 4funds para el tier micro (contrato limpio con 4 fondos)
         if (tierConfig.id === 'micro') {
-            console.log(`✅ Usando contrato ${tierConfig.name} 4Funds:`, addresses["4funds"])
             return addresses["4funds"]
         }
 
@@ -39,7 +31,6 @@ export function useSanDigital(userAddress, tierConfig = null) {
             return addresses.sanDigital2026
         }
 
-        console.log(`✅ Usando contrato ${tierConfig.name} (${tierConfig.id}):`, tierAddress)
         return tierAddress
     }
 
@@ -66,25 +57,34 @@ export function useSanDigital(userAddress, tierConfig = null) {
         args: [userAddress],
         enabled: !!userAddress,
         watch: true,
-        pollingInterval: 3000, // Actualizar cada 3 segundos
+        pollingInterval: 2000, // Actualizar cada 3 segundos
     })
 
     // Calcular cantidad de posiciones activas desde el array
     const activePositionsCount = userPositionIds?.length || 0;
     const refetchActiveCount = refetchPositionIds; // Usar el mismo refetch
 
-    // DEBUG: Log activePositionsCount
-    console.log('🔢 activePositionsCount from hook:', {
-        raw: activePositionsCount,
-        userPositionIds,
-        length: userPositionIds?.length,
-        type: typeof activePositionsCount,
-        userAddress,
-        contractAddress
+    // Calcular posiciones cerradas dinámicamente
+    const { data: positionsData } = useReadContracts({
+        contracts: userPositionIds?.map(posId => ({
+            address: contractAddress,
+            abi: SanDigitalABI,
+            functionName: 'positions',
+            args: [posId]
+        })) || [],
+        enabled: !!userPositionIds && userPositionIds.length > 0,
+        watch: true,
     })
 
-    // El contrato 4Funds no tiene estas funciones legacy
-    const closedPositionsCount = 0; // No hay tracking de  posiciones cerradas en 4Funds
+
+
+    // Contar posiciones cerradas (hasExited = true)
+    // result es un array: [id, owner, isActive, hasExited, balance, ...]
+    // hasExited está en el índice 3
+    const closedPositionsCount = positionsData?.filter(
+        result => result.status === 'success' && result.result?.[3] === true
+    ).length || 0
+
     const pendingWithdrawals = 0; // No existe en 4Funds
 
     // ==========================================
@@ -100,7 +100,7 @@ export function useSanDigital(userAddress, tierConfig = null) {
         abi: SanDigitalABI,
         functionName: 'getGlobalActivosCount',
         watch: true,
-        pollingInterval: 5000, // Actualizar cada 5 segundos
+        pollingInterval: 3000, // Actualizar cada 5 segundos
     })
 
     // Leer total de ciclos completados (métrica histórica)
@@ -109,7 +109,7 @@ export function useSanDigital(userAddress, tierConfig = null) {
         abi: SanDigitalABI,
         functionName: 'totalCompletedCycles',
         watch: true,
-        pollingInterval: 3000, // Reducido a 3 segundos
+        pollingInterval: 2000, // Reducido a 3 segundos
     })
 
     // ID de la posición que tiene el turno (Head of FIFO Queue)
@@ -148,7 +148,7 @@ export function useSanDigital(userAddress, tierConfig = null) {
         abi: SanDigitalABI,
         functionName: 'operationalFund',
         watch: true,
-        pollingInterval: 5000,
+        pollingInterval: 3000,
     })
 
     const { data: closureFund, refetch: refetchClosureFund } = useReadContract({
@@ -156,7 +156,7 @@ export function useSanDigital(userAddress, tierConfig = null) {
         abi: SanDigitalABI,
         functionName: 'closureFund',
         watch: true,
-        pollingInterval: 5000,
+        pollingInterval: 3000,
     })
 
     const { data: totalDeposited } = useReadContract({
@@ -164,7 +164,7 @@ export function useSanDigital(userAddress, tierConfig = null) {
         abi: SanDigitalABI,
         functionName: 'totalDeposited',
         watch: true,
-        pollingInterval: 5000,
+        pollingInterval: 3000,
     })
 
     const { data: totalWithdrawn } = useReadContract({
@@ -172,7 +172,7 @@ export function useSanDigital(userAddress, tierConfig = null) {
         abi: SanDigitalABI,
         functionName: 'totalWithdrawn',
         watch: true,
-        pollingInterval: 5000,
+        pollingInterval: 3000,
     })
 
     const { data: totalSaldosUsuarios } = useReadContract({
@@ -180,7 +180,7 @@ export function useSanDigital(userAddress, tierConfig = null) {
         abi: SanDigitalABI,
         functionName: 'totalSaldosUsuarios',
         watch: true,
-        pollingInterval: 5000,
+        pollingInterval: 3000,
     })
 
     // ==========================================
@@ -256,8 +256,6 @@ export function useSanDigital(userAddress, tierConfig = null) {
 
     // Crear nueva posición (join)
     const createPosition = () => {
-        console.log("🔍 %c USANDO CONTRATO: " + contractAddress, "background: #222; color: #bada55; font-size: 20px");
-        console.log('🚀 createPosition called - bypassing auto-estimation')
         writeContract({
             address: contractAddress,
             abi: SanDigitalABI,
