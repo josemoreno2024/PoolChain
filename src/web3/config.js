@@ -1,0 +1,66 @@
+import { http, createConfig, fallback } from 'wagmi'
+import { sepolia } from 'wagmi/chains'
+import { injected } from 'wagmi/connectors'
+
+// Definir opBNB chain
+export const opBNB = {
+    id: 204,
+    name: 'opBNB Mainnet',
+    network: 'opbnb-mainnet',
+    nativeCurrency: {
+        decimals: 18,
+        name: 'BNB',
+        symbol: 'BNB',
+    },
+    rpcUrls: {
+        default: {
+            http: ['https://opbnb-mainnet-rpc.bnbchain.org'],
+        },
+        public: {
+            http: ['https://opbnb-mainnet-rpc.bnbchain.org'],
+        },
+    },
+    blockExplorers: {
+        default: {
+            name: 'opBNBScan',
+            url: 'https://opbnbscan.com',
+        },
+    },
+    testnet: false,
+}
+
+// Storage personalizado que NO guarda nada (evita auto-reconexión errática)
+const noopStorage = {
+    getItem: () => null,
+    setItem: () => { },
+    removeItem: () => { },
+}
+
+// Clave API de Alchemy proporcionada por el usuario
+const alchemyKey = 'di9OyaKVjkEvKTA_AsdB7'
+
+export const config = createConfig({
+    chains: [sepolia, opBNB],
+    connectors: [
+        injected(),
+    ],
+    transports: {
+        [sepolia.id]: fallback([
+            // 1. Alchemy (Batch enabled) - Prioridad Alta
+            http(`https://eth-sepolia.g.alchemy.com/v2/${alchemyKey}`, {
+                batch: true
+            }),
+            // 2. Fallbacks Públicos - Si Alchemy falla o se agota
+            http('https://rpc.sepolia.org'),
+            http('https://ethereum-sepolia-rpc.publicnode.com'),
+            http('https://sepolia.drpc.org'),
+        ]),
+        [opBNB.id]: fallback([
+            http('https://opbnb-mainnet-rpc.bnbchain.org'),
+            http('https://opbnb-mainnet.nodereal.io/v1/64a9df0874fb4a93b9d0a3849de012d3'),
+            http('https://opbnb.publicnode.com'),
+        ]),
+    },
+    ssr: false,
+    storage: noopStorage,
+})

@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>SAN Digital 2026</title>
+    <script>
+        // Limpiar TODO el localStorage al cargar
+        if (window.location.search.includes('clear=1')) {
+            localStorage.clear();
+            sessionStorage.clear();
+            window.location.href = window.location.origin;
+        }
+    </script>
+</head>
+<body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.jsx"></script>
+</body>
+</html>

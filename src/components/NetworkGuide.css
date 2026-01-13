@@ -1,0 +1,252 @@
+.network-guide-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.8);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    backdrop-filter: blur(4px);
+    overflow-y: auto;
+    padding: 20px;
+}
+
+.network-guide-modal {
+    background: var(--color-bg-card);
+    border-radius: 20px;
+    max-width: 700px;
+    width: 100%;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+    border: 1px solid var(--color-border);
+}
+
+.network-guide-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 24px;
+    border-bottom: 1px solid var(--color-border);
+    position: sticky;
+    top: 0;
+    background: var(--color-bg-card);
+    z-index: 10;
+}
+
+.network-guide-header h2 {
+    margin: 0;
+    font-size: 1.5rem;
+    color: var(--color-text);
+}
+
+.network-guide-body {
+    padding: 24px;
+}
+
+.network-selector,
+.wallet-selector-guide {
+    margin-bottom: 24px;
+}
+
+.network-selector label,
+.wallet-selector-guide label {
+    display: block;
+    margin-bottom: 12px;
+    font-weight: 600;
+    color: var(--color-text);
+}
+
+.network-tabs,
+.wallet-tabs {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.network-tab,
+.wallet-tabs button {
+    padding: 10px 16px;
+    background: var(--color-bg-secondary);
+    border: 2px solid var(--color-border);
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-size: 0.9rem;
+    color: var(--color-text);
+}
+
+.network-tab {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+}
+
+.network-tab.recommended {
+    border-color: var(--color-primary);
+}
+
+.network-gas {
+    font-size: 0.75rem;
+    color: var(--color-text-secondary);
+}
+
+.network-tab.active,
+.wallet-tabs button.active {
+    background: var(--color-primary);
+    border-color: var(--color-primary);
+    color: white;
+}
+
+.network-tab:hover,
+.wallet-tabs button:hover {
+    border-color: var(--color-primary);
+    transform: translateY(-2px);
+}
+
+.network-config {
+    background: var(--color-bg-secondary);
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 24px;
+}
+
+.config-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+}
+
+.config-header h3 {
+    margin: 0;
+    font-size: 1.1rem;
+    color: var(--color-text);
+}
+
+.copy-button {
+    padding: 8px 16px;
+    background: var(--color-primary);
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: all 0.2s;
+}
+
+.copy-button:hover {
+    background: #45a049;
+    transform: translateY(-2px);
+}
+
+.config-data {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.config-item {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.config-item label {
+    font-size: 0.85rem;
+    color: var(--color-text-secondary);
+    font-weight: 500;
+}
+
+.config-item code {
+    background: var(--color-bg-card);
+    padding: 8px 12px;
+    border-radius: 6px;
+    font-family: 'Courier New', monospace;
+    font-size: 0.9rem;
+    color: var(--color-primary);
+    border: 1px solid var(--color-border);
+}
+
+.step-by-step {
+    margin-bottom: 24px;
+}
+
+.step-by-step h3 {
+    margin-bottom: 16px;
+    color: var(--color-text);
+}
+
+.step-by-step ol {
+    padding-left: 20px;
+    margin: 0;
+}
+
+.step-by-step li {
+    margin-bottom: 12px;
+    color: var(--color-text);
+    line-height: 1.6;
+}
+
+.tutorial-links {
+    text-align: center;
+    padding-top: 20px;
+    border-top: 1px solid var(--color-border);
+}
+
+.tutorial-links p {
+    margin-bottom: 12px;
+    color: var(--color-text-secondary);
+}
+
+.tutorial-links a {
+    color: var(--color-primary);
+    text-decoration: none;
+    font-weight: 500;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.tutorial-links a:hover {
+    text-decoration: underline;
+}
+
+@media (max-width: 768px) {
+    .network-guide-modal {
+        width: 95%;
+        max-height: 95vh;
+    }
+
+    .network-guide-header {
+        padding: 20px;
+    }
+
+    .network-guide-body {
+        padding: 20px;
+    }
+
+    .network-tabs,
+    .wallet-tabs {
+        flex-direction: column;
+    }
+
+    .network-tab,
+    .wallet-tabs button {
+        width: 100%;
+    }
+
+    .config-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+    }
+
+    .copy-button {
+        width: 100%;
+    }
+}

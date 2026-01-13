@@ -1,0 +1,28 @@
+# Hardhat
+node_modules
+cache
+artifacts
+typechain-types
+coverage
+coverage.json
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Wallets (PRIVADO - NO COMPARTIR)
+wallets.json
+*.private.json
+scripts/wallets.json
+
+# IDE
+.vscode
+.idea
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db

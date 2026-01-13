@@ -1,0 +1,266 @@
+.admin-panel {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 40px 20px;
+}
+
+.admin-header {
+    text-align: center;
+    margin-bottom: 40px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+}
+
+.header-content h1 {
+    font-size: 2.5rem;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-bottom: 10px;
+}
+
+.admin-subtitle {
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 1.1rem;
+}
+
+/* Tier Selector */
+.tier-selector-admin {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    padding: 15px 25px;
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.tier-selector-admin label {
+    font-weight: bold;
+    font-size: 1.1rem;
+    color: #fff;
+}
+
+.tier-select-dropdown {
+    padding: 10px 20px;
+    font-size: 1rem;
+    border-radius: 8px;
+    border: 2px solid rgba(102, 126, 234, 0.5);
+    background: rgba(15, 52, 96, 0.8);
+    color: white;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    min-width: 250px;
+}
+
+.tier-select-dropdown:hover {
+    border-color: #667eea;
+    background: rgba(15, 52, 96, 1);
+}
+
+.tier-select-dropdown:focus {
+    outline: none;
+    border-color: #764ba2;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.2);
+}
+
+.tier-select-dropdown option {
+    background: #0f3460;
+    color: white;
+    padding: 10px;
+}
+
+/* Admin Sections */
+.admin-section {
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 16px;
+    padding: 30px;
+    margin-bottom: 30px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+}
+
+.admin-section h2 {
+    font-size: 1.5rem;
+    margin-bottom: 20px;
+    color: #fff;
+}
+
+/* Health Grid */
+.health-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 20px;
+}
+
+.health-card {
+    background: linear-gradient(135deg, rgba(102, 126, 234, 0.2) 0%, rgba(118, 75, 162, 0.2) 100%);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    padding: 20px;
+    text-align: center;
+}
+
+.health-card.ratio-card {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    grid-column: span 2;
+}
+
+.health-label {
+    font-size: 0.9rem;
+    opacity: 0.8;
+    margin-bottom: 10px;
+    color: rgba(255, 255, 255, 0.7);
+}
+
+.health-value {
+    font-size: 1.8rem;
+    font-weight: bold;
+    color: #fff;
+}
+
+.health-value.highlight {
+    color: #4CAF50;
+}
+
+.ratio-status {
+    font-size: 1rem;
+    margin-left: 10px;
+}
+
+/* Metrics Grid */
+.metrics-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 20px;
+}
+
+.metric-card {
+    background: rgba(255, 255, 255, 0.05);
+    border: 2px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    padding: 25px;
+    text-align: center;
+    transition: all 0.3s ease;
+}
+
+.metric-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+    border-color: rgba(102, 126, 234, 0.5);
+}
+
+.metric-icon {
+    font-size: 2.5rem;
+    margin-bottom: 10px;
+}
+
+.metric-label {
+    font-size: 0.9rem;
+    color: rgba(255, 255, 255, 0.7);
+    margin-bottom: 10px;
+}
+
+.metric-value {
+    font-size: 2rem;
+    font-weight: bold;
+    color: #fff;
+}
+
+/* Admin Actions */
+.admin-actions {
+    display: flex;
+    gap: 20px;
+    justify-content: center;
+}
+
+.admin-button {
+    padding: 15px 40px;
+    font-size: 1.1rem;
+    font-weight: bold;
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.withdraw-button {
+    background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+    color: white;
+    box-shadow: 0 4px 15px rgba(76, 175, 80, 0.3);
+}
+
+.withdraw-button:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(76, 175, 80, 0.4);
+}
+
+.withdraw-button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* Transparency Note */
+.transparency-note {
+    background: rgba(255, 193, 7, 0.1);
+    border-left: 4px solid #ffa500;
+    border: 1px solid rgba(255, 165, 0, 0.3);
+}
+
+.transparency-note h3 {
+    color: #ffa500;
+    margin-bottom: 15px;
+}
+
+.transparency-note p,
+.transparency-note ul,
+.transparency-note li {
+    color: rgba(255, 255, 255, 0.9);
+}
+
+.transparency-note ul {
+    margin-left: 20px;
+    line-height: 1.8;
+}
+
+.transparency-note li {
+    margin-bottom: 8px;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .admin-header h1 {
+        font-size: 2rem;
+    }
+
+    .tier-selector-admin {
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .tier-select-dropdown {
+        width: 100%;
+        min-width: auto;
+    }
+
+    .health-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .health-card.ratio-card {
+        grid-column: span 1;
+    }
+
+    .metrics-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .admin-actions {
+        flex-direction: column;
+    }
+}

@@ -1,0 +1,23 @@
+.wallet-button {
+    min-width: 180px;
+    font-size: 1rem;
+    padding: var(--spacing-sm) var(--spacing-md);
+}
+
+.wallet-button.connected {
+    background: var(--color-bg-card);
+    color: var(--color-text);
+    font-family: 'Courier New', monospace;
+    font-size: 0.875rem;
+}
+
+.wallet-button.connected:hover {
+    background: var(--color-border);
+    transform: translateY(-2px);
+}
+
+.wallet-button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+}

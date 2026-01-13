@@ -1,0 +1,191 @@
+.network-detector {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: linear-gradient(135deg, #ff9800 0%, #ff6b00 100%);
+    border-bottom: 3px solid #ff6b00;
+    box-shadow: 0 4px 20px rgba(255, 107, 0, 0.3);
+    animation: slideDown 0.3s ease-out;
+}
+
+@keyframes slideDown {
+    from {
+        transform: translateY(-100%);
+        opacity: 0;
+    }
+
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+.network-detector-content {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 16px 20px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    flex-wrap: wrap;
+}
+
+.network-detector-icon {
+    font-size: 2rem;
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+
+    0%,
+    100% {
+        transform: scale(1);
+    }
+
+    50% {
+        transform: scale(1.1);
+    }
+}
+
+.network-detector-info {
+    flex: 1;
+    min-width: 250px;
+}
+
+.network-detector-title {
+    font-size: 1.1rem;
+    font-weight: bold;
+    color: white;
+    margin-bottom: 4px;
+}
+
+.network-detector-details {
+    font-size: 0.9rem;
+    color: rgba(255, 255, 255, 0.95);
+    line-height: 1.4;
+}
+
+.network-detector-details strong {
+    font-weight: 600;
+    color: white;
+}
+
+.auto-setup-label {
+    display: inline-block;
+    margin-top: 4px;
+    font-size: 0.8rem;
+    color: rgba(255, 255, 255, 0.85);
+    font-style: italic;
+}
+
+.network-detector-actions {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.network-switch-button,
+.network-guide-button {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-size: 0.95rem;
+}
+
+.network-switch-button {
+    background: white;
+    color: #ff6b00;
+}
+
+.network-switch-button:hover:not(:disabled) {
+    background: #f5f5f5;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.network-switch-button:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+}
+
+.network-add-usdt-button {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-size: 0.95rem;
+    background: linear-gradient(135deg, #2196F3 0%, #1976D2 100%);
+    color: white;
+}
+
+.network-add-usdt-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(33, 150, 243, 0.4);
+}
+
+.network-guide-button {
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.network-guide-button:hover {
+    background: rgba(255, 255, 255, 0.3);
+    transform: translateY(-2px);
+}
+
+.network-dismiss-button {
+    background: none;
+    border: none;
+    color: white;
+    font-size: 1.8rem;
+    cursor: pointer;
+    padding: 0;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: all 0.2s;
+}
+
+.network-dismiss-button:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+@media (max-width: 768px) {
+    .network-detector-content {
+        padding: 14px 16px;
+        gap: 12px;
+    }
+
+    .network-detector-icon {
+        font-size: 1.5rem;
+    }
+
+    .network-detector-title {
+        font-size: 1rem;
+    }
+
+    .network-detector-details {
+        font-size: 0.85rem;
+    }
+
+    .network-detector-actions {
+        width: 100%;
+        justify-content: space-between;
+    }
+
+    .network-switch-button,
+    .network-guide-button {
+        padding: 8px 16px;
+        font-size: 0.9rem;
+    }
+}

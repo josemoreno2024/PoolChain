@@ -1,0 +1,32 @@
+{
+    "name": "sandigital2026-contracts",
+    "version": "2.0.0",
+    "description": "SanDigital2026 Smart Contracts - Sistema de ahorro dinámico",
+    "main": "index.js",
+    "scripts": {
+        "compile": "hardhat compile",
+        "test": "hardhat test",
+        "test:coverage": "hardhat coverage",
+        "deploy:sepolia": "hardhat run scripts/deploy.js --network sepolia",
+        "deploy:amoy": "hardhat run scripts/deploy.js --network polygonAmoy",
+        "upgrade:sepolia": "hardhat run scripts/deploy-upgrade.js --network sepolia",
+        "verify:sepolia": "hardhat verify --network sepolia",
+        "clean": "hardhat clean"
+    },
+    "keywords": [
+        "blockchain",
+        "ethereum",
+        "hardhat",
+        "smart-contracts"
+    ],
+    "author": "",
+    "license": "MIT",
+    "devDependencies": {
+        "@nomicfoundation/hardhat-toolbox": "^5.0.0",
+        "hardhat": "^2.22.18"
+    },
+    "dependencies": {
+        "@openzeppelin/contracts": "^5.2.0",
+        "dotenv": "^16.4.7"
+    }
+}
