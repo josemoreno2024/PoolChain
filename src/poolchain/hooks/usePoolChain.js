@@ -1,9 +1,9 @@
 import { useReadContract, useWriteContract, useAccount, useWatchContractEvent } from 'wagmi';
 import { useState, useEffect } from 'react';
 import { parseUnits, formatUnits } from 'viem';
-import PoolChainABI from '../../contracts/PoolChain_Micro_Mock.json';
-import MockUSDTABI from '../../contracts/MockUSDT.json';
-import addresses from '../../contracts/addresses.json';
+import PoolChainABI from '../contracts/PoolChain_Micro_PositionSelect.json';
+import MockUSDTABI from '../contracts/MockUSDT.json';
+import addresses from '../contracts/addresses.json';
 
 const USDT_DECIMALS = 6;
 
@@ -13,7 +13,7 @@ export function usePoolChain() {
     const [txHash, setTxHash] = useState(null);
 
     // Contract addresses
-    const poolChainAddress = addresses.opBNBTestnet?.PoolChain_Micro_Mock;
+    const poolChainAddress = addresses.opBNBTestnet?.PoolChain_Micro_PositionSelect;
     const usdtAddress = addresses.opBNBTestnet?.MockUSDT;
 
     // ========== READ FUNCTIONS ==========
@@ -24,7 +24,9 @@ export function usePoolChain() {
         abi: MockUSDTABI.abi,
         functionName: 'balanceOf',
         args: userAddress ? [userAddress] : undefined,
-        watch: true
+        query: {
+            refetchInterval: 2000, // Poll every 2 seconds
+        }
     });
 
     // USDT Allowance
@@ -33,49 +35,51 @@ export function usePoolChain() {
         abi: MockUSDTABI.abi,
         functionName: 'allowance',
         args: userAddress ? [userAddress, poolChainAddress] : undefined,
-        watch: true
+        query: {
+            refetchInterval: 2000, // Poll every 2 seconds
+        }
     });
 
     // Pool Status
-    const { data: participantCount } = useReadContract({
+    const { data: participantCount, refetch: refetchParticipantCount } = useReadContract({
         address: poolChainAddress,
         abi: PoolChainABI.abi,
-        functionName: 'getParticipantCount',
+        functionName: 'getTicketCount',
         watch: true
     });
 
-    const { data: currentPool } = useReadContract({
+    const { data: currentPool, refetch: refetchCurrentPool } = useReadContract({
         address: poolChainAddress,
         abi: PoolChainABI.abi,
         functionName: 'getCurrentPool',
         watch: true
     });
 
-    const { data: poolFilled } = useReadContract({
+    const { data: poolFilled, refetch: refetchPoolFilled } = useReadContract({
         address: poolChainAddress,
         abi: PoolChainABI.abi,
         functionName: 'isPoolFilled',
         watch: true
     });
 
-    const { data: winnersSelected } = useReadContract({
+    const { data: winnersSelected, refetch: refetchWinnersSelected } = useReadContract({
         address: poolChainAddress,
         abi: PoolChainABI.abi,
         functionName: 'areWinnersSelected',
         watch: true
     });
 
-    // User participation
-    const { data: hasParticipated } = useReadContract({
+    // User participation - MultiTicket contract has getUserTicketCount
+    const { data: userTicketCount, refetch: refetchUserTicketCount } = useReadContract({
         address: poolChainAddress,
         abi: PoolChainABI.abi,
-        functionName: 'hasParticipated',
+        functionName: 'getUserTicketCount',
         args: userAddress ? [userAddress] : undefined,
         watch: true
     });
 
     // Claimable amount
-    const { data: claimableAmount } = useReadContract({
+    const { data: claimableAmount, refetch: refetchClaimableAmount } = useReadContract({
         address: poolChainAddress,
         abi: PoolChainABI.abi,
         functionName: 'getClaimable',
@@ -120,6 +124,31 @@ export function usePoolChain() {
         watch: true
     });
 
+    // User's ticket IDs
+    const { data: userTicketIds, refetch: refetchUserTicketIds } = useReadContract({
+        address: poolChainAddress,
+        abi: PoolChainABI.abi,
+        functionName: 'getUserTickets',
+        args: userAddress ? [userAddress] : undefined,
+        watch: true
+    });
+
+    // All tickets in the pool (to get positions)
+    const { data: allTickets, refetch: refetchAllTickets } = useReadContract({
+        address: poolChainAddress,
+        abi: PoolChainABI.abi,
+        functionName: 'getAllTickets',
+        watch: true
+    });
+
+    // Available positions
+    const { data: availablePositions, refetch: refetchAvailablePositions } = useReadContract({
+        address: poolChainAddress,
+        abi: PoolChainABI.abi,
+        functionName: 'getAvailablePositions',
+        watch: true
+    });
+
     // ========== WRITE FUNCTIONS ==========
 
     const { writeContractAsync } = useWriteContract();
@@ -153,7 +182,7 @@ export function usePoolChain() {
     };
 
     // Buy Ticket
-    const buyTicket = async () => {
+    const buyTicket = async (quantity = 1) => {
         if (!poolChainAddress) {
             throw new Error('PoolChain contract not found');
         }
@@ -164,7 +193,8 @@ export function usePoolChain() {
             const hash = await writeContractAsync({
                 address: poolChainAddress,
                 abi: PoolChainABI.abi,
-                functionName: 'buyTicket'
+                functionName: 'buyTicket',
+                args: [quantity]
             });
 
             setTxHash(hash);
@@ -172,6 +202,46 @@ export function usePoolChain() {
             return hash;
         } catch (error) {
             console.error('Error buying ticket:', error);
+            throw error;
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    // Buy Tickets at Specific Positions
+    const buySpecificPositions = async (positions) => {
+        if (!poolChainAddress) {
+            throw new Error('PoolChain contract not found');
+        }
+
+        try {
+            setIsLoading(true);
+
+            // Debug: Check what we received
+            console.log('📥 Received positions:', positions);
+            console.log('📥 Type:', typeof positions);
+            console.log('📥 Is Array:', Array.isArray(positions));
+
+            // Ensure it's a valid array
+            let positionsArray = Array.isArray(positions) ? positions : [positions];
+
+            // Convert to BigInt for contract (viem expects BigInt for uint256[])
+            const positionsBigInt = positionsArray.map(pos => BigInt(pos));
+
+            console.log('✅ Sending to contract:', positionsBigInt);
+
+            const hash = await writeContractAsync({
+                address: poolChainAddress,
+                abi: PoolChainABI.abi,
+                functionName: 'buySpecificPositions',
+                args: [positionsBigInt]
+            });
+
+            setTxHash(hash);
+            await refetchUSDTBalance();
+            return hash;
+        } catch (error) {
+            console.error('Error buying positions:', error);
             throw error;
         } finally {
             setIsLoading(false);
@@ -229,6 +299,33 @@ export function usePoolChain() {
         }
     };
 
+    // Mint Test USDT (Faucet)
+    const mintTestUSDT = async () => {
+        if (!usdtAddress) {
+            throw new Error('USDT contract not found');
+        }
+
+        try {
+            setIsLoading(true);
+
+            const hash = await writeContractAsync({
+                address: usdtAddress,
+                abi: MockUSDTABI.abi,
+                functionName: 'mint',
+                args: [userAddress, parseUnits('1000', USDT_DECIMALS)]
+            });
+
+            setTxHash(hash);
+            await refetchUSDTBalance();
+            return hash;
+        } catch (error) {
+            console.error('Error minting test USDT:', error);
+            throw error;
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
     // ========== HELPER FUNCTIONS ==========
 
     const formatUSDT = (value) => {
@@ -236,9 +333,9 @@ export function usePoolChain() {
         return parseFloat(formatUnits(value, USDT_DECIMALS)).toFixed(2);
     };
 
-    const isApproved = () => {
+    const isApproved = (ticketPriceUSDT = 2) => {
         if (!usdtAllowance) return false;
-        const ticketPrice = parseUnits('2', USDT_DECIMALS);
+        const ticketPrice = parseUnits(ticketPriceUSDT.toString(), USDT_DECIMALS);
         return BigInt(usdtAllowance) >= ticketPrice;
     };
 
@@ -260,9 +357,14 @@ export function usePoolChain() {
         currentRound: currentRound ? Number(currentRound) : 1,
 
         // User status
-        hasParticipated: hasParticipated || false,
+        hasParticipated: userTicketCount ? Number(userTicketCount) > 0 : false,
+        userTicketCount: userTicketCount ? Number(userTicketCount) : 0,
+        userTicketIds: userTicketIds || [],
+        userPositions: userTicketIds || [], // Alias for compatibility
+        allTickets: allTickets || [],
+        availablePositions: availablePositions || [],
         claimableAmount: formatUSDT(claimableAmount),
-        isApproved: isApproved(),
+        isApproved,
 
         // Winners
         groupAWinners: groupAWinners || [],
@@ -278,9 +380,27 @@ export function usePoolChain() {
 
         // Actions
         approveUSDT,
-        buyTicket,
+        buySpecificPositions,
         executeDraw,
         claimPrize,
+        mintTestUSDT,
+
+        // Refresh function - call after transactions
+        refreshAllData: async () => {
+            await Promise.all([
+                refetchUSDTBalance(),
+                refetchAllowance(),
+                refetchParticipantCount(),
+                refetchCurrentPool(),
+                refetchPoolFilled(),
+                refetchWinnersSelected(),
+                refetchUserTicketCount(),
+                refetchUserTicketIds(),
+                refetchAllTickets(),
+                refetchAvailablePositions(),
+                refetchClaimableAmount()
+            ]);
+        },
 
         // Loading state
         isLoading,

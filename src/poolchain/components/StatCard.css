@@ -1,0 +1,37 @@
+.stat-card {
+    text-align: center;
+    padding: var(--spacing-lg);
+    transition: var(--transition);
+}
+
+.stat-card.highlight {
+    border: 2px solid var(--color-primary);
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    box-shadow: 0 8px 16px rgba(102, 126, 234, 0.3);
+}
+
+.stat-label {
+    font-size: 0.875rem;
+    color: var(--color-text-secondary);
+    margin-bottom: var(--spacing-xs);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.stat-value {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: var(--color-text);
+}
+
+.stat-card.highlight .stat-label,
+.stat-card.highlight .stat-value {
+    color: white;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .stat-value {
+        font-size: 1.5rem;
+    }
+}

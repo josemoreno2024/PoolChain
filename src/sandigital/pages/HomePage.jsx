@@ -7,9 +7,6 @@ export function HomePage() {
         <div className="home-page">
             <div className="hero-section">
                 <h1 className="hero-title">Bienvenido a PoolChain Raffles</h1>
-                <p className="hero-subtitle">
-                    Sistema revolucionario con múltiples ganadores - Fee 5%
-                </p>
             </div>
 
             <div className="products-grid">

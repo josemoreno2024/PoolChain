@@ -1,0 +1,214 @@
+.dashboard {
+    min-height: 100vh;
+    padding: var(--spacing-xl) 0;
+    background: var(--color-bg);
+}
+
+.dashboard-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--spacing-xl);
+    flex-wrap: wrap;
+    gap: var(--spacing-md);
+}
+
+.dashboard-header h1 {
+    color: white !important;
+    background: none !important;
+    -webkit-text-fill-color: white !important;
+    background-clip: unset !important;
+    -webkit-background-clip: unset !important;
+}
+
+.scenario-selector {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    background: var(--color-bg-secondary);
+    padding: var(--spacing-sm) var(--spacing-md);
+    border-radius: var(--radius-md);
+    border: 1px solid var(--color-border);
+}
+
+.scenario-selector label {
+    font-size: 0.875rem;
+    color: var(--color-text-secondary);
+}
+
+.scenario-select {
+    background: var(--color-bg-card);
+    color: var(--color-text);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    padding: 0.5rem;
+    font-family: inherit;
+    cursor: pointer;
+}
+
+.section {
+    margin-bottom: var(--spacing-xl);
+}
+
+.section h2 {
+    margin-bottom: var(--spacing-md);
+    color: var(--color-text);
+}
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: var(--spacing-md);
+}
+
+.actions {
+    display: flex;
+    gap: var(--spacing-md);
+    flex-wrap: wrap;
+}
+
+.action-button {
+    min-width: 200px;
+}
+
+.no-actions {
+    color: var(--color-text-secondary);
+    font-style: italic;
+    padding: var(--spacing-md);
+}
+
+.phase-notice {
+    background: rgba(245, 158, 11, 0.1);
+    border: 1px solid var(--color-warning);
+    border-radius: var(--radius-md);
+    padding: var(--spacing-md);
+    margin-top: var(--spacing-xl);
+}
+
+.phase-notice p {
+    color: var(--color-text-secondary);
+    margin: 0;
+}
+
+.phase-notice strong {
+    color: var(--color-warning);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .dashboard-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 15px;
+    }
+
+    .dashboard-header h1 {
+        font-size: 1.8rem;
+    }
+
+    .wallet-info {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+        width: 100%;
+    }
+
+    .wallet-address {
+        font-size: 0.85rem;
+        word-break: break-all;
+    }
+
+    .disconnect-button {
+        width: 100%;
+        padding: 8px 16px !important;
+        font-size: 0.9rem !important;
+    }
+
+    @keyframes pulse {
+
+        0%,
+        100% {
+            opacity: 1;
+        }
+
+        50% {
+            opacity: 0.7;
+        }
+    }
+
+    @keyframes glow {
+
+        0%,
+        100% {
+            box-shadow: 0 8px 32px rgba(0, 255, 136, 0.4);
+            transform: scale(1);
+        }
+
+        50% {
+            box-shadow: 0 12px 48px rgba(0, 255, 136, 0.8);
+            transform: scale(1.02);
+        }
+    }
+
+    .stats-grid {
+        grid-template-columns: 1fr;
+        gap: 12px;
+    }
+
+    .section {
+        padding: 20px 15px;
+    }
+
+    .section h2 {
+        font-size: 1.3rem;
+    }
+
+    .actions {
+        flex-direction: column;
+        width: 100%;
+        gap: 15px;
+    }
+
+    .action-button {
+        width: 100%;
+        min-height: 50px;
+        /* Better touch target */
+        font-size: 1rem;
+    }
+
+    .balance-card {
+        padding: 20px 15px;
+    }
+
+    .balance-label {
+        font-size: 0.95rem;
+    }
+
+    .balance-value {
+        font-size: 2rem;
+    }
+
+    /* Mejorar tooltips para móvil */
+    .tooltip-trigger {
+        width: 24px;
+        height: 24px;
+        font-size: 14px;
+    }
+
+    .tooltip-content {
+        max-width: 250px;
+        font-size: 13px;
+        padding: 10px 14px;
+    }
+}
+
+/* Tablets */
+@media (min-width: 769px) and (max-width: 1024px) {
+    .stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .dashboard-header h1 {
+        font-size: 2rem;
+    }
+}

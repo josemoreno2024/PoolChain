@@ -1,0 +1,17 @@
+{
+  "network": "opBNBTestnet",
+  "contract": "PoolChain_Micro_PositionSelect",
+  "address": "0x712329cAC1d30D04ABbe436f657037808014849E",
+  "deployer": "0x1D6E67C6DF802A9cF021924F829513550ffE0024",
+  "timestamp": "2026-01-13T23:30:41.223Z",
+  "parameters": {
+    "usdt": "0x2F767F0Bb9d715CF5356308e30b79B27D09a96DD",
+    "platformWallet": "0x1D6E67C6DF802A9cF021924F829513550ffE0024",
+    "ticketPrice": "2 USDT",
+    "maxParticipants": 100,
+    "gasFee": "3%",
+    "maxPerPurchase": 10,
+    "maxPerUser": 20,
+    "features": "Position Selection (1-100)"
+  }
+}

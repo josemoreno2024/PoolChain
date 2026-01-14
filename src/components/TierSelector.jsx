@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom'
-import { getAllTiers, getCommissionPercentage } from '../config/tiers'
+import { getAllTiers, getCommissionPercentage } from '../sandigital/config/tiers'
 import './TierSelector.css'
 
 export default function TierSelector() {

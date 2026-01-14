@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useAccount } from 'wagmi';
-import { usePoolChain } from '../web3/hooks/usePoolChain';
+import { usePoolChain } from '../hooks/usePoolChain';
 import './PoolChainPage.css';
 
 export function PoolChainPage() {
@@ -237,6 +237,7 @@ function TierDashboard({ tier, onBack, address }) {
         poolFilled,
         winnersSelected,
         hasParticipated,
+        userTicketCount,
         claimableAmount,
         isApproved,
         groupAWinners,
@@ -280,7 +281,7 @@ function TierDashboard({ tier, onBack, address }) {
 
     const handleBuyTicket = async () => {
         try {
-            await buyTicket();
+            await buyTicket(1); // Comprar 1 ticket por defecto
             setSuccessMessage('✅ Ticket comprado exitosamente');
             setShowSuccess(true);
             setTimeout(() => setShowSuccess(false), 3000);
@@ -346,9 +347,9 @@ function TierDashboard({ tier, onBack, address }) {
             <div className="dashboard-container">
                 {/* Header */}
                 <div className="dashboard-header">
-                    <div className="breadcrumb">
-                        Dashboard → {tier.name} → Ronda #{currentRound}
-                    </div>
+                    <h2 className="dashboard-title">
+                        {tier.icon} {tier.name} #{currentRound?.toString().padStart(2, '0') || '01'}
+                    </h2>
                     <div className="wallet-info">
                         <span className="wallet-label">Wallet:</span>
                         <span className="wallet-address">{formatAddress(address)}</span>

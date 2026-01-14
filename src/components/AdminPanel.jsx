@@ -1,8 +1,8 @@
 import { useState } from 'react'
 import { useAccount } from 'wagmi'
 import { formatUnits } from 'viem'
-import { useSanDigital } from '../web3/hooks/useSanDigital'
-import { getTier, TIERS } from '../config/tiers'
+import { useSanDigital } from '../sandigital/hooks/useSanDigital'
+import { getTier, TIERS } from '../sandigital/config/tiers'
 import './AdminPanel.css'
 
 export function AdminPanel() {

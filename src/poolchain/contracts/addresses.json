@@ -1,6 +1,6 @@
 {
   "opBNBTestnet": {
     "MockUSDT": "0x2F767F0Bb9d715CF5356308e30b79B27D09a96DD",
-    "PoolChain_Micro_Mock": "0x035ea592CE6214A69e938657bC8887a08280ae61"
+    "PoolChain_Micro_PositionSelect": "0x712329cAC1d30D04ABbe436f657037808014849E"
   }
 }

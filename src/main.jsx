@@ -3,7 +3,7 @@ import { createRoot } from 'react-dom/client'
 import { WagmiProvider } from 'wagmi'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { config } from './web3/config'
-import './styles/globals.css'
+import './shared/styles/globals.css'
 import App from './App.jsx'
 
 const queryClient = new QueryClient()

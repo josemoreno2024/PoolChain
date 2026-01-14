@@ -1,17 +1,17 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useDisconnect, useAccount } from 'wagmi'
-import { useSanDigital } from '../web3/hooks/useSanDigital'
-import { useClaimHistory } from '../web3/hooks/useClaimHistory'
+import { useSanDigital } from '../sandigital/hooks/useSanDigital'
+import { useClaimHistory } from '../sandigital/hooks/useClaimHistory'
 import { formatUnits } from 'viem'
 import './Dashboard.css'
 import StatCard from './StatCard'
 import AggregatedPositionCard from './AggregatedPositionCard'
 import Tooltip from './Tooltip'
-import SuccessToast from './SuccessToast'
+import SuccessToast from '../shared/components/ui/SuccessToast'
 import ErrorModal from './ErrorModal'
-import TransactionExplorer from './TransactionExplorer'
-import ProcessingModal from './ProcessingModal'
+import TransactionExplorer from '../sandigital/components/TransactionExplorer'
+import ProcessingModal from '../shared/components/modals/ProcessingModal'
 
 export default function Dashboard({ userAddress, tierConfig }) {
     const navigate = useNavigate()

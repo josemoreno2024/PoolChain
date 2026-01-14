@@ -1,4 +1,4 @@
-import TierSelector from '../components/TierSelector';
+import TierSelector from '../../components/TierSelector';
 
 export function SanDigitalPage() {
     return (

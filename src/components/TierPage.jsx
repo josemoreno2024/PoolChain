@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useAccount } from 'wagmi'
-import { getTier } from '../config/tiers'
+import { getTier } from '../sandigital/config/tiers'
 import Dashboard from './Dashboard'
 import './TierPage.css'
 
