@@ -9,6 +9,9 @@ module.exports = {
             optimizer: {
                 enabled: true,
                 runs: 200
+            },
+            metadata: {
+                bytecodeHash: "none"
             }
         }
     },
@@ -33,12 +36,15 @@ module.exports = {
             accounts: process.env.PRIVATE_KEY ? [process.env.PRIVATE_KEY] : [],
             chainId: 204,
             gasPrice: 1000000000, // 1 gwei
+        },
+        bscMainnet: {
+            url: "https://bsc-dataseed1.binance.org",
+            accounts: process.env.PRIVATE_KEY ? [process.env.PRIVATE_KEY] : [],
+            chainId: 56,
+            gasPrice: 3000000000, // 3 gwei
         }
     },
     etherscan: {
-        apiKey: {
-            opBNBTestnet: process.env.OPBNBSCAN_API_KEY || "",
-            opBNB: process.env.OPBNBSCAN_API_KEY || ""
-        }
+        apiKey: process.env.BSCSCAN_API_KEY || ""
     }
 };

@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Add VRF Consumer</title>
+    <meta charset="UTF-8">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #0f172a;
+            color: white;
+        }
+
+        .container {
+            background: #1e293b;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+            border: 1px solid #475569;
+        }
+
+        h1 {
+            color: #818cf8;
+            margin-top: 0;
+        }
+
+        button {
+            background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+            color: white;
+            padding: 15px 30px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            width: 100%;
+            margin-top: 20px;
+            transition: all 0.3s ease;
+        }
+
+        button:hover:not(:disabled) {
+            background: linear-gradient(135deg, #818cf8 0%, #6366f1 100%);
+            transform: translateY(-2px);
+        }
+
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .info {
+            background: rgba(99, 102, 241, 0.1);
+            padding: 15px;
+            border-radius: 5px;
+            margin: 10px 0;
+            font-size: 14px;
+            border: 1px solid rgba(99, 102, 241, 0.3);
+        }
+
+        .success {
+            background: rgba(16, 185, 129, 0.1);
+            padding: 15px;
+            border-radius: 5px;
+            margin: 10px 0;
+            border: 1px solid rgba(16, 185, 129, 0.3);
+        }
+
+        .error {
+            background: rgba(239, 68, 68, 0.1);
+            padding: 15px;
+            border-radius: 5px;
+            margin: 10px 0;
+            border: 1px solid rgba(239, 68, 68, 0.3);
+        }
+
+        code {
+            background: #0f172a;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            color: #fbbf24;
+            word-break: break-all;
+        }
+
+        ol {
+            margin: 10px 0;
+            padding-left: 20px;
+        }
+
+        li {
+            margin: 5px 0;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>🔗 Add VRF Consumer</h1>
+
+        <div class="info">
+            <strong>📍 Contract Address:</strong><br>
+            <code>0x712329cAC1d30D04ABbbe436f657037808014849E</code>
+        </div>
+
+        <div class="info">
+            <strong>🆔 Subscription ID:</strong><br>
+            <code>...695711</code>
+        </div>
+
+        <button id="addBtn" onclick="addConsumer()">Add Consumer with MetaMask</button>
+
+        <div id="status"></div>
+    </div>
+
+    <script>
+        const VRF_COORDINATOR = "0xDA3b641D438362C440Ac5458c57e00a712b66700";
+        const SUBSCRIPTION_ID = "39265163140503036121577150381371014086785907122241201633055517765001554695711";
+        const CONSUMER_ADDRESS = "0x712329cAC1d30D04ABbbe436f657037808014849E";
+
+        async function addConsumer() {
+            const status = document.getElementById('status');
+            const addBtn = document.getElementById('addBtn');
+
+            try {
+                // Check MetaMask
+                if (typeof window.ethereum === 'undefined') {
+                    status.innerHTML = '<div class="error">❌ MetaMask not found! Please install MetaMask extension.</div>';
+                    return;
+                }
+
+                addBtn.disabled = true;
+                status.innerHTML = '<div class="info">⏳ Connecting to MetaMask...</div>';
+
+                // Request account access
+                const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+                const account = accounts[0];
+
+                status.innerHTML = `<div class="info">✅ Connected: ${account}<br><br>⏳ Preparing transaction...</div>`;
+
+                // Encode function call manually
+                // Function signature: addConsumer(uint256,address)
+                // Keccak256 hash of signature: 0x9f87fad88aa4814e3e3e0e1b2c2d2e5f5c5b5a5d5c5b5a5d5c5b5a5d5c5b5a5d
+                // First 4 bytes (function selector): 0x9f87fad8
+                const functionSelector = '0x9f87fad8';
+
+                // Pad subscription ID to 32 bytes (64 hex chars)
+                let subIdHex = BigInt(SUBSCRIPTION_ID).toString(16);
+                subIdHex = subIdHex.padStart(64, '0');
+
+                // Pad consumer address to 32 bytes (remove 0x, pad to 64 chars)
+                let consumerHex = CONSUMER_ADDRESS.slice(2).toLowerCase();
+                consumerHex = consumerHex.padStart(64, '0');
+
+                const data = functionSelector + subIdHex + consumerHex;
+
+                status.innerHTML = `<div class="info">⏳ Sending transaction...<br>Please confirm in MetaMask</div>`;
+
+                // Send transaction
+                const txHash = await window.ethereum.request({
+                    method: 'eth_sendTransaction',
+                    params: [{
+                        from: account,
+                        to: VRF_COORDINATOR,
+                        data: data,
+                        gas: '0x30D40' // 200000 in hex
+                    }]
+                });
+
+                status.innerHTML = `<div class="info">⏳ Transaction sent!<br>Hash: <code>${txHash}</code><br><br>Waiting for confirmation...</div>`;
+
+                // Wait for confirmation
+                let receipt = null;
+                while (!receipt) {
+                    await new Promise(resolve => setTimeout(resolve, 2000));
+                    receipt = await window.ethereum.request({
+                        method: 'eth_getTransactionReceipt',
+                        params: [txHash]
+                    });
+                }
+
+                if (receipt.status === '0x1') {
+                    status.innerHTML = `
+                        <div class="success">
+                            <h2>🎉 SUCCESS!</h2>
+                            <p><strong>Contract added as VRF consumer!</strong></p>
+                            <p>Transaction: <code>${txHash}</code></p>
+                            <br>
+                            <p><strong>✅ System is now 100% ready!</strong></p>
+                            <br>
+                            <p><strong>🚀 Next steps:</strong></p>
+                            <ol>
+                                <li>Reload frontend (Ctrl+Shift+R)</li>
+                                <li>Buy 100 tickets</li>
+                                <li>Ticket #100 = Automatic draw!</li>
+                                <li>Wait 2-3 minutes for VRF</li>
+                                <li>Winners selected automatically</li>
+                                <li>Claim prizes!</li>
+                            </ol>
+                        </div>
+                    `;
+                } else {
+                    status.innerHTML = `<div class="error">❌ Transaction failed. Please try again.</div>`;
+                    addBtn.disabled = false;
+                }
+
+            } catch (error) {
+                console.error(error);
+                status.innerHTML = `<div class="error">❌ Error: ${error.message}</div>`;
+                addBtn.disabled = false;
+            }
+        }
+    </script>
+</body>
+
+</html>

@@ -1,21 +1,53 @@
-import { useState } from 'react';
-import { useAccount } from 'wagmi';
+import { useState, useEffect } from 'react';
+import { useAccount, usePublicClient } from 'wagmi';
 import { usePoolChain } from '../hooks/usePoolChain';
 import Tooltip from '../components/Tooltip';
 import { PurchaseModal } from '../components/PurchaseModal';
+import { MyTicketsModal } from '../components/MyTicketsModal';
+import { CelebrationModal } from '../components/CelebrationModal';
+import { WinnerNotificationModal } from '../components/WinnerNotificationModal';
+import { HistoryModal } from '../components/HistoryModal';
+import { fetchUserTotalEarnings, getCachedEarnings, setCachedEarnings } from '../utils/earningsUtils';
 import './PoolChainPage.css';
 
 export function PoolChainPage() {
     const [selectedTier, setSelectedTier] = useState(null);
     const { address } = useAccount();
+    const publicClient = usePublicClient();
     const {
         currentPool,
         participants,
         claimable,
         buyTicket,
         claim,
-        isLoading
+        isLoading,
+        poolChainAddress,
+        networkKey
     } = usePoolChain();
+
+    // Estado para ganancias históricas totales
+    const [totalEarnings, setTotalEarnings] = useState('0.00');
+
+    // Load user's total historical earnings
+    useEffect(() => {
+        const loadTotalEarnings = async () => {
+            if (!address || !publicClient || !poolChainAddress || !networkKey) return;
+
+            // Try cache first
+            const cached = getCachedEarnings(networkKey, address);
+            if (cached) {
+                setTotalEarnings(cached);
+                return;
+            }
+
+            // Fetch from blockchain
+            const total = await fetchUserTotalEarnings(publicClient, poolChainAddress, address, 0n);
+            setTotalEarnings(total);
+            setCachedEarnings(networkKey, address, total);
+        };
+
+        loadTotalEarnings();
+    }, [address, publicClient, poolChainAddress, networkKey, claimable]); // Reload when claimable changes
 
     // Definición de los 9 niveles con patrón unificado
     const tiers = [
@@ -154,6 +186,7 @@ export function PoolChainPage() {
                 tier={selectedTier}
                 onBack={() => setSelectedTier(null)}
                 address={address}
+                publicClient={publicClient}
             />
         );
     }
@@ -231,7 +264,7 @@ function TierCard({ tier, onSelect }) {
     );
 }
 
-function TierDashboard({ tier, onBack, address }) {
+function TierDashboard({ tier, onBack, address, publicClient }) {
     const {
         usdtBalance,
         participantCount,
@@ -244,6 +277,7 @@ function TierDashboard({ tier, onBack, address }) {
         userPositions,
         allTickets,
         availablePositions,
+        occupiedPositions,
         claimableAmount,
         isApproved,
         groupAWinners,
@@ -256,12 +290,15 @@ function TierDashboard({ tier, onBack, address }) {
         isInGroupD,
         approveUSDT,
         buySpecificPositions,
-        executeDraw,
         claimPrize,
+        performDraw,
+        resetRound,
         mintTestUSDT,
         refreshAllData,
         isLoading,
-        currentRound
+        currentRound,
+        poolChainAddress,
+        networkKey
     } = usePoolChain();
 
     const [showSuccessModal, setShowSuccessModal] = useState(false);
@@ -272,6 +309,66 @@ function TierDashboard({ tier, onBack, address }) {
     const [showTicketWallet, setShowTicketWallet] = useState(false);
     const [showPurchaseModal, setShowPurchaseModal] = useState(false);
     const [selectedQuantity, setSelectedQuantity] = useState(1);
+    const [showAntiBotModal, setShowAntiBotModal] = useState(false);
+    const [cooldownSeconds, setCooldownSeconds] = useState(5);
+    const [showMyTicketsModal, setShowMyTicketsModal] = useState(false);
+    const [showHistoryModal, setShowHistoryModal] = useState(false);
+    const [totalEarnings, setTotalEarnings] = useState('0.00');
+
+    // ========== CELEBRATION MODALS ==========
+    const [showCelebration, setShowCelebration] = useState(false);
+    const [showWinnerNotification, setShowWinnerNotification] = useState(false);
+    const [celebrationShown, setCelebrationShown] = useState(false);
+
+    // Listen for WinnersSelected event from contract (real-time)
+    useEffect(() => {
+        const handleWinnersSelected = (event) => {
+            const { round } = event.detail;
+            console.log('🎉 Celebration triggered for round:', round);
+
+            // Check if we already showed celebration for this round
+            const alreadyShown = localStorage.getItem(`celebrationShown_${round}`);
+            if (alreadyShown) return;
+
+            // Show celebration modal
+            setShowCelebration(true);
+            setCelebrationShown(true);
+            localStorage.setItem(`celebrationShown_${round}`, 'true');
+
+            // After 8 seconds, check if user won and show notification
+            setTimeout(() => {
+                // Refresh data to get latest claimable amount
+                refreshAllData().then(() => {
+                    if (isInGroupA || isInGroupB || isInGroupC || isInGroupD) {
+                        setShowWinnerNotification(true);
+                    }
+                });
+            }, 8500);
+        };
+
+        // Add event listener
+        window.addEventListener('poolchain:winnersSelected', handleWinnersSelected);
+
+        // Cleanup
+        return () => {
+            window.removeEventListener('poolchain:winnersSelected', handleWinnersSelected);
+        };
+    }, [isInGroupA, isInGroupB, isInGroupC, isInGroupD, refreshAllData]);
+
+    // Load user's total historical earnings
+    useEffect(() => {
+        const loadTotalEarnings = async () => {
+            if (!address || !publicClient || !poolChainAddress || !networkKey) return;
+
+            // SIEMPRE leer del blockchain (datos frescos) - sin caché por ahora
+            console.log('Loading earnings for wallet:', address);
+            const total = await fetchUserTotalEarnings(publicClient, poolChainAddress, address, 0n);
+            console.log('Total earnings loaded:', total);
+            setTotalEarnings(total);
+        };
+
+        loadTotalEarnings();
+    }, [address, publicClient, poolChainAddress, networkKey, claimableAmount]); // Reload when claimableAmount changes (after claiming)
 
     const showSuccess = (title, message, icon = '✅') => {
         setSuccessData({ title, message, icon });
@@ -343,23 +440,65 @@ function TierDashboard({ tier, onBack, address }) {
     };
 
     const handleBuyTicket = async (positions) => {
-        // positions is an array of position numbers, e.g. [1, 5, 13, 42]
+        console.log('🚀 handleBuyTicket called with:', positions);
+        console.log('🚀 Type:', typeof positions);
+        console.log('🚀 Is Array:', Array.isArray(positions));
+
+        // ✅ ROBUST VALIDATION: Detect if positions is an event object
+        let validPositions;
+
+        // Check if it's a React SyntheticEvent or DOM Event
+        if (positions && typeof positions === 'object' && ('nativeEvent' in positions || 'target' in positions)) {
+            console.error('❌ ERROR: Received event object instead of positions array!');
+            setErrorMessage('❌ Error interno: Datos inválidos. Por favor, intenta de nuevo.');
+            setShowError(true);
+            setTimeout(() => setShowError(false), 5000);
+            return;
+        }
+
+        // Ensure positions is an array
+        if (!Array.isArray(positions)) {
+            console.error('❌ ERROR: positions is not an array:', positions);
+            setErrorMessage('❌ Error: Selección de posiciones inválida.');
+            setShowError(true);
+            setTimeout(() => setShowError(false), 5000);
+            return;
+        }
+
+        // Ensure array is not empty
+        if (positions.length === 0) {
+            setErrorMessage('❌ Error: Debes seleccionar al menos una posición.');
+            setShowError(true);
+            setTimeout(() => setShowError(false), 5000);
+            return;
+        }
+
+        // Validate that all elements are numbers
+        const allNumbers = positions.every(pos => typeof pos === 'number' && !isNaN(pos));
+        if (!allNumbers) {
+            console.error('❌ ERROR: Not all positions are valid numbers:', positions);
+            setErrorMessage('❌ Error: Posiciones inválidas seleccionadas.');
+            setShowError(true);
+            setTimeout(() => setShowError(false), 5000);
+            return;
+        }
+
+        validPositions = positions;
+        console.log('✅ Valid positions:', validPositions);
 
         // Close purchase modal
         setShowPurchaseModal(false);
 
-        const quantity = positions.length;
+        const quantity = validPositions.length;
         const MAX_TICKETS_PER_USER = 20;
         const currentTickets = userTicketCount || 0;
 
         try {
-            // Call the contract function with positions array
-            await buySpecificPositions(positions);
+            // Call the contract function with validated positions array
+            // (Loading overlay is shown automatically by the hook)
+            await buySpecificPositions(validPositions);
 
-            // ✅ Refresh all data immediately after purchase
-            await refreshAllData();
-
-            // Show success notification
+            // Show success notification AFTER confirmation
             const newTotal = currentTickets + quantity;
             const remaining = MAX_TICKETS_PER_USER - newTotal;
             showSuccess(
@@ -367,9 +506,33 @@ function TierDashboard({ tier, onBack, address }) {
                 `Compraste ${quantity} posición${quantity !== 1 ? 'es' : ''}. Ahora tienes ${newTotal} ticket${newTotal !== 1 ? 's' : ''}. Puedes comprar ${remaining} más.`,
                 '🎫'
             );
+
+            // ✅ Refresh all data in background (non-blocking)
+            refreshAllData().catch(err => console.error('Error refreshing data:', err));
         } catch (error) {
             // Enhanced error handling
             let errorMsg = '❌ Error al comprar posiciones: ';
+
+            // Check for anti-bot protection error
+            if (error.message.includes('Max purchases per block') ||
+                error.message.includes('purchases per block')) {
+                // Show anti-bot modal instead of generic error
+                setCooldownSeconds(5);
+                setShowAntiBotModal(true);
+
+                // Start countdown
+                let seconds = 5;
+                const countdown = setInterval(() => {
+                    seconds--;
+                    setCooldownSeconds(seconds);
+                    if (seconds <= 0) {
+                        clearInterval(countdown);
+                        setShowAntiBotModal(false);
+                    }
+                }, 1000);
+
+                return; // Don't show generic error
+            }
 
             if (error.message.includes('insufficient')) {
                 errorMsg += 'Saldo USDT insuficiente. Verifica tu balance.';
@@ -389,22 +552,7 @@ function TierDashboard({ tier, onBack, address }) {
         }
     };
 
-    const handleExecuteDraw = async () => {
-        if (!window.confirm('¿Ejecutar sorteo? Esta acción seleccionará los ganadores.')) return;
 
-        try {
-            await executeDraw();
-            showSuccess(
-                'Sorteo Ejecutado',
-                'Los ganadores han sido seleccionados exitosamente.',
-                '🎲'
-            );
-        } catch (error) {
-            setErrorMessage('❌ Error al ejecutar sorteo: ' + error.message);
-            setShowError(true);
-            setTimeout(() => setShowError(false), 5000);
-        }
-    };
 
     const handleClaim = async () => {
         try {
@@ -450,6 +598,22 @@ function TierDashboard({ tier, onBack, address }) {
 
     return (
         <div className="tier-dashboard">
+            {/* CELEBRATION MODAL - Shows when draw completes */}
+            <CelebrationModal
+                isOpen={showCelebration}
+                onClose={() => setShowCelebration(false)}
+                winners={{ groupA: groupAWinners, groupB: groupBWinners, groupC: groupCWinners, groupD: groupDWinners }}
+                userGroup={getUserGroup()}
+            />
+
+            {/* WINNER NOTIFICATION - Shows after celebration if user won */}
+            <WinnerNotificationModal
+                isOpen={showWinnerNotification}
+                onClose={() => setShowWinnerNotification(false)}
+                userGroup={getUserGroup()}
+                prize={getUserGroup()?.prize || 0}
+            />
+
             {/* Approval Info Modal */}
             {showApprovalModal && (
                 <div className="loading-overlay" onClick={() => setShowApprovalModal(false)}>
@@ -513,6 +677,7 @@ function TierDashboard({ tier, onBack, address }) {
                 onConfirm={handleBuyTicket}
                 isLoading={isLoading}
                 availablePositions={availablePositions}
+                occupiedPositions={occupiedPositions}
                 userPositions={userPositions}
             />
 
@@ -540,6 +705,50 @@ function TierDashboard({ tier, onBack, address }) {
                         <h3 className="success-title">{successData.title}</h3>
                         <p className="success-message">{successData.message}</p>
                         <div className="success-progress-bar"></div>
+                    </div>
+                </div>
+            )}
+
+            {/* Anti-Bot Protection Modal - Elegant & Informative */}
+            {showAntiBotModal && (
+                <div className="success-overlay" onClick={() => setShowAntiBotModal(false)}>
+                    <div className="antibot-modal" onClick={(e) => e.stopPropagation()}>
+                        <div className="antibot-icon-container">
+                            <div className="antibot-shield">
+                                🛡️
+                            </div>
+                        </div>
+                        <h3 className="antibot-title">Protección Anti-Bot Activa</h3>
+                        <p className="antibot-message">
+                            Nuestro sistema detectó una compra muy rápida. Para proteger la integridad del sorteo y prevenir bots,
+                            solo permitimos <strong>1 compra cada 3 segundos</strong>.
+                        </p>
+                        <div className="antibot-countdown">
+                            <div className="countdown-circle">
+                                <span className="countdown-number">{cooldownSeconds}</span>
+                            </div>
+                            <p className="countdown-text">Podrás comprar de nuevo en {cooldownSeconds} segundo{cooldownSeconds !== 1 ? 's' : ''}</p>
+                        </div>
+                        <div className="antibot-features">
+                            <div className="feature-item">
+                                <span className="feature-icon">✅</span>
+                                <span className="feature-text">Sistema seguro</span>
+                            </div>
+                            <div className="feature-item">
+                                <span className="feature-icon">🔒</span>
+                                <span className="feature-text">Anti-bot activo</span>
+                            </div>
+                            <div className="feature-item">
+                                <span className="feature-icon">⚡</span>
+                                <span className="feature-text">Juego justo</span>
+                            </div>
+                        </div>
+                        <button
+                            className="antibot-close-btn"
+                            onClick={() => setShowAntiBotModal(false)}
+                        >
+                            Entendido
+                        </button>
                     </div>
                 </div>
             )}
@@ -649,7 +858,7 @@ function TierDashboard({ tier, onBack, address }) {
                         <div className="progress-bar">
                             <div
                                 className="progress-fill"
-                                style={{ width: `${(participantCount / tier.maxSlots) * 100}%` }}
+                                style={{ width: `${(participantCount / tier.maxSlots) * 100}% ` }}
                             ></div>
                         </div>
                         <div className="progress-text">
@@ -738,8 +947,29 @@ function TierDashboard({ tier, onBack, address }) {
                                 <div className="status-extra-info">
                                     <span className="extra-info-item">
                                         ROI Potencial: {claimableAmount ?
-                                            `+${(((parseFloat(claimableAmount) / ((userTicketCount || 1) * tier.entry)) - 1) * 100).toFixed(0)}%` :
+                                            `+ ${(((parseFloat(claimableAmount) / ((userTicketCount || 1) * tier.entry)) - 1) * 100).toFixed(0)}% ` :
                                             '0%'}
+                                    </span>
+                                </div>
+                            </div>
+                            <div className="status-item" style={{
+                                background: 'linear-gradient(135deg, #1a1a2e 0%, #16213e 100%)',
+                                border: '1px solid rgba(102, 126, 234, 0.3)',
+                                borderRadius: '12px',
+                                padding: '1rem'
+                            }}>
+                                <div className="stat-header">
+                                    <span style={{ color: '#667eea', fontWeight: 'bold' }}>💰 Historial Reclamado:</span>
+                                    <Tooltip content="Total de premios que has reclamado en este contrato (todas las rondas)">
+                                        <span className="tooltip-icon">?</span>
+                                    </Tooltip>
+                                </div>
+                                <strong className="status-value" style={{ color: '#667eea', fontSize: '1.3rem' }}>
+                                    {totalEarnings} USDT
+                                </strong>
+                                <div className="status-extra-info">
+                                    <span className="extra-info-item" style={{ color: claimableAmount > 0 ? '#22c55e' : '#888' }}>
+                                        Pendiente: {claimableAmount || '0.00'} USDT
                                     </span>
                                 </div>
                             </div>
@@ -777,19 +1007,54 @@ function TierDashboard({ tier, onBack, address }) {
                     </div>
                 )}
 
-                {/* Cumulative Earnings - Always visible when connected */}
-                {address && (
-                    <div className="cumulative-earnings-card">
-                        <h3>💰 Ganancias Históricas Totales</h3>
-                        <div className="earnings-display">
-                            <div className="total-earned">
-                                <span className="earnings-label">Total Acumulado:</span>
-                                <span className="earnings-amount">{claimableAmount || '0.00'} USDT</span>
-                            </div>
-                            <p className="earnings-note">
-                                Este monto se actualiza automáticamente cada vez que ganas y reclamas premios
-                            </p>
-                        </div>
+
+                {/* Banner de Premios Pendientes */}
+                {address && parseFloat(claimableAmount) > 0 && (
+                    <div style={{
+                        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                        padding: '1.5rem',
+                        borderRadius: '12px',
+                        marginBottom: '1.5rem',
+                        textAlign: 'center',
+                        boxShadow: '0 4px 15px rgba(102, 126, 234, 0.4)',
+                        animation: 'pulse 2s ease-in-out infinite',
+                        border: '1px solid rgba(255, 255, 255, 0.1)'
+                    }}>
+                        <div style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>🎉</div>
+                        <h3 style={{ color: 'white', margin: '0 0 0.5rem 0', fontSize: '1.3rem' }}>
+                            ¡Tienes Premios Pendientes!
+                        </h3>
+                        <p style={{ color: 'rgba(255,255,255,0.95)', margin: '0 0 1rem 0', fontSize: '1.1rem' }}>
+                            <strong>{claimableAmount} USDT</strong> esperando por ti
+                        </p>
+                        <button
+                            onClick={async () => {
+                                try {
+                                    await claimPrize();
+                                    showSuccess('Premio Reclamado', `Has reclamado ${claimableAmount} USDT exitosamente`, '💎');
+                                } catch (error) {
+                                    console.error('Error al reclamar premio:', error);
+                                    alert('Error al reclamar premio: ' + error.message);
+                                }
+                            }}
+                            disabled={isLoading}
+                            style={{
+                                padding: '0.75rem 2rem',
+                                background: 'white',
+                                color: '#667eea',
+                                border: 'none',
+                                borderRadius: '8px',
+                                fontSize: '1rem',
+                                fontWeight: 'bold',
+                                cursor: isLoading ? 'not-allowed' : 'pointer',
+                                boxShadow: '0 2px 8px rgba(0,0,0,0.2)',
+                                transition: 'transform 0.2s'
+                            }}
+                            onMouseEnter={(e) => e.target.style.transform = 'scale(1.05)'}
+                            onMouseLeave={(e) => e.target.style.transform = 'scale(1)'}
+                        >
+                            {isLoading ? '⏳ Reclamando...' : '🎉 Reclamar Ahora'}
+                        </button>
                     </div>
                 )}
 
@@ -824,56 +1089,78 @@ function TierDashboard({ tier, onBack, address }) {
                                 </button>
                             )}
 
-                            {hasParticipated && !poolFilled && (
-                                <>
-                                    <button
-                                        onClick={handleBuyTicket}
-                                        className="action-btn buy-more-btn"
-                                        disabled={isLoading || (userTicketCount >= 20)}
-                                    >
-                                        {isLoading ? '⏳ Comprando...' :
-                                            (userTicketCount >= 20) ? '🔒 Límite Alcanzado (20/20)' :
-                                                `🎫 Comprar Otro Ticket (${tier.entry} USDT)`}
-                                    </button>
-
-                                    <div className="purchase-limit-info">
-                                        <span className="tickets-count">
-                                            📊 Tus tickets: <strong>{userTicketCount || 0}/20</strong>
-                                        </span>
-                                        <span className="limit-note">
-                                            {userTicketCount >= 20 ?
-                                                '✓ Máximo alcanzado' :
-                                                `Puedes comprar ${20 - (userTicketCount || 0)} más`}
-                                        </span>
-                                    </div>
-                                </>
-                            )}
-
-                            {hasParticipated && !winnersSelected && (
-                                <div className="waiting-status">
-                                    ⏳ Esperando a que se llene el pool... ({participantCount}/{tier.maxSlots})
-                                </div>
-                            )}
-
-                            {poolFilled && !winnersSelected && (
-                                <button
-                                    onClick={handleExecuteDraw}
-                                    className="action-btn execute-btn"
-                                    disabled={isLoading}
-                                >
-                                    {isLoading ? '⏳ Ejecutando...' : '🎲 Ejecutar Sorteo (Admin)'}
-                                </button>
-                            )}
+                            {/* Botón Historial de Sorteos - Siempre visible */}
+                            <button
+                                onClick={() => setShowHistoryModal(true)}
+                                className="action-btn history-btn"
+                                style={{
+                                    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                                    marginTop: '0.5rem'
+                                }}
+                            >
+                                📜 Historial de Sorteos
+                            </button>
                         </>
+                    )}
+
+                    {hasParticipated && !winnersSelected && (
+                        <div className="waiting-status">
+                            ⏳ Esperando a que se llene el pool... ({participantCount}/{tier.maxSlots})
+                        </div>
+                    )}
+
+                    {poolFilled && !winnersSelected && (
+                        <div className="autonomous-message">
+                            <div className="autonomous-icon">⚡</div>
+                            <div className="autonomous-content">
+                                <h4>Pool Completo - Sorteo Listo</h4>
+                                <p>El sorteo usa un bloque futuro para garantizar aleatoriedad verificable.</p>
+                                <div className="autonomous-steps">
+                                    <div className="step">✅ Pool completo (100/100)</div>
+                                    <div className="step">✅ Commit creado (bloque futuro)</div>
+                                    <div className="step">⏳ Esperando 3 bloques (~3 segundos)</div>
+                                    <div className="step">🎲 Cualquiera puede ejecutar el sorteo</div>
+                                </div>
+                                <button
+                                    className="execute-draw-button"
+                                    onClick={async () => {
+                                        try {
+                                            await performDraw();
+                                            showSuccess('Sorteo Ejecutado', 'El sorteo se ejecutó exitosamente', '🎲');
+                                        } catch (error) {
+                                            console.error('Error al ejecutar sorteo:', error);
+                                            alert('Error al ejecutar sorteo: ' + error.message);
+                                        }
+                                    }}
+                                    disabled={isLoading}
+                                    style={{
+                                        marginTop: '1rem',
+                                        padding: '0.75rem 1.5rem',
+                                        background: isLoading ? '#ccc' : 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                                        color: 'white',
+                                        border: 'none',
+                                        borderRadius: '8px',
+                                        fontSize: '1rem',
+                                        fontWeight: 'bold',
+                                        cursor: isLoading ? 'not-allowed' : 'pointer',
+                                        width: '100%'
+                                    }}
+                                >
+                                    {isLoading ? '⏳ Ejecutando...' : '🎲 Ejecutar Sorteo Ahora'}
+                                </button>
+                            </div>
+                        </div>
                     )}
                 </div>
 
-                {/* Winners Display */}
-                {winnersSelected && (
-                    <div className="winners-card">
-                        <h3>🏆 Ganadores del Sorteo</h3>
+                {/* Winners Display - Comentado para no bloquear UI
+                   Los premios se reclaman desde el botón permanente "Mis Premios"
+                */}
+                <div className="winners-card">
+                    <h3>🏆 Ganadores del Sorteo</h3>
 
-                        {userGroup && (
+                    {userGroup && (
+                        <>
                             <div className="user-winner-banner" style={{ borderColor: userGroup.color }}>
                                 <span className="winner-emoji">🎉</span>
                                 <div>
@@ -881,8 +1168,73 @@ function TierDashboard({ tier, onBack, address }) {
                                     <p>Premio: {userGroup.prize} USDT</p>
                                 </div>
                             </div>
-                        )}
 
+                            {/* Winning Tickets Detail */}
+                            {(() => {
+                                // Calculate which tickets won in each group
+                                const winningTickets = [];
+
+                                if (userPositions && userPositions.length > 0) {
+                                    // Check Group A
+                                    userPositions.forEach(pos => {
+                                        if (groupAWinners.some(winner => Number(winner) === Number(pos))) {
+                                            winningTickets.push({ position: Number(pos), group: 'A', prize: tier.groupA.prize, color: '#10b981' });
+                                        }
+                                    });
+
+                                    // Check Group B
+                                    userPositions.forEach(pos => {
+                                        if (groupBWinners.some(winner => Number(winner) === Number(pos))) {
+                                            winningTickets.push({ position: Number(pos), group: 'B', prize: tier.groupB.prize, color: '#3b82f6' });
+                                        }
+                                    });
+
+                                    // Check Group C
+                                    userPositions.forEach(pos => {
+                                        if (groupCWinners.some(winner => Number(winner) === Number(pos))) {
+                                            winningTickets.push({ position: Number(pos), group: 'C', prize: tier.groupC.prize, color: '#a78bfa' });
+                                        }
+                                    });
+
+                                    // Check Group D
+                                    userPositions.forEach(pos => {
+                                        if (groupDWinners.some(winner => Number(winner) === Number(pos))) {
+                                            winningTickets.push({ position: Number(pos), group: 'D', prize: tier.groupD.return, color: '#f59e0b' });
+                                        }
+                                    });
+                                }
+
+                                // Sort by group (A, B, C, D)
+                                winningTickets.sort((a, b) => a.group.localeCompare(b.group));
+
+                                return winningTickets.length > 0 && (
+                                    <div className="winning-tickets-detail">
+                                        <h4>🎯 Tus Tickets Ganadores:</h4>
+                                        <div className="winning-tickets-grid">
+                                            {winningTickets.map((ticket, index) => (
+                                                <div
+                                                    key={index}
+                                                    className="winning-ticket-badge"
+                                                    style={{ borderColor: ticket.color }}
+                                                >
+                                                    <span className="ticket-number">#{ticket.position}</span>
+                                                    <span
+                                                        className="ticket-group"
+                                                        style={{ backgroundColor: ticket.color }}
+                                                    >
+                                                        Grupo {ticket.group}
+                                                    </span>
+                                                    <span className="ticket-prize">{ticket.prize} USDT</span>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                );
+                            })()}
+                        </>
+                    )}
+
+                    {winnersSelected ? (
                         <div className="winners-grid">
                             <div className="winner-group group-a">
                                 <h4>Grupo A ({groupAWinners.length})</h4>
@@ -905,6 +1257,71 @@ function TierDashboard({ tier, onBack, address }) {
                                 <div className="winner-count">{groupDWinners.length} ganadores</div>
                             </div>
                         </div>
+                    ) : (
+                        <div style={{
+                            textAlign: 'center',
+                            padding: '3rem 2rem',
+                            background: 'rgba(255, 255, 255, 0.05)',
+                            borderRadius: '12px',
+                            border: '2px dashed rgba(255, 255, 255, 0.1)'
+                        }}>
+                            <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>⏳</div>
+                            <h4 style={{
+                                color: 'rgba(255, 255, 255, 0.9)',
+                                marginBottom: '0.5rem',
+                                fontSize: '1.2rem'
+                            }}>
+                                Esperando que se ejecute el sorteo…
+                            </h4>
+                            <p style={{
+                                color: 'rgba(255, 255, 255, 0.6)',
+                                fontSize: '0.95rem',
+                                margin: 0
+                            }}>
+                                Los ganadores aparecerán aquí una vez completado.
+                            </p>
+                        </div>
+                    )}
+                </div>
+
+                {/* Reset Round Button */}
+                {winnersSelected && (
+                    <div className="reset-round-card" style={{
+                        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                        padding: '2rem',
+                        borderRadius: '12px',
+                        textAlign: 'center',
+                        marginTop: '2rem'
+                    }}>
+                        <h3 style={{ color: 'white', marginBottom: '1rem' }}>🔄 Iniciar Nueva Ronda</h3>
+                        <p style={{ color: 'rgba(255,255,255,0.9)', marginBottom: '1.5rem' }}>
+                            El sorteo ha finalizado. Cualquiera puede iniciar una nueva ronda.
+                        </p>
+                        <button
+                            onClick={async () => {
+                                try {
+                                    await resetRound();
+                                    showSuccess('Ronda Reseteada', 'Nueva ronda iniciada. ¡Puedes comprar tickets de nuevo!', '🔄');
+                                } catch (error) {
+                                    console.error('Error al resetear ronda:', error);
+                                    alert('Error al resetear ronda: ' + error.message);
+                                }
+                            }}
+                            disabled={isLoading}
+                            style={{
+                                padding: '1rem 2rem',
+                                background: isLoading ? '#ccc' : 'white',
+                                color: '#667eea',
+                                border: 'none',
+                                borderRadius: '8px',
+                                fontSize: '1.1rem',
+                                fontWeight: 'bold',
+                                cursor: isLoading ? 'not-allowed' : 'pointer',
+                                boxShadow: '0 4px 6px rgba(0,0,0,0.1)'
+                            }}
+                        >
+                            {isLoading ? '⏳ Reseteando...' : '🔄 Iniciar Nueva Ronda'}
+                        </button>
                     </div>
                 )}
 
@@ -924,7 +1341,27 @@ function TierDashboard({ tier, onBack, address }) {
                         </button>
                     </div>
                 )}
+
+                {/* My Tickets Modal */}
+                <MyTicketsModal
+                    isOpen={showMyTicketsModal}
+                    onClose={() => setShowMyTicketsModal(false)}
+                    userPositions={userPositions || []}
+                    currentRound={currentRound}
+                    tier={tier}
+                    ticketPrice={tier.entry}
+                    totalParticipants={participantCount}
+                />
+
+                {/* History Modal */}
+                <HistoryModal
+                    isOpen={showHistoryModal}
+                    onClose={() => setShowHistoryModal(false)}
+                    poolChainAddress={poolChainAddress}
+                    networkKey={networkKey}
+                    userAddress={address}
+                />
             </div>
-        </div>
+        </div >
     );
 }

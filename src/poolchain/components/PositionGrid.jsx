@@ -3,6 +3,7 @@ import './PositionGrid.css';
 
 export function PositionGrid({
     occupiedPositions = [],
+    userPositions = [], // Posiciones que YA compraste
     selectedPositions = [],
     onPositionToggle,
     maxSelections = 20,
@@ -12,9 +13,10 @@ export function PositionGrid({
     const maxAllowed = Math.max(0, maxSelections - userCurrentTickets);
 
     const handlePositionClick = (position) => {
-        // Check if position is occupied
-        if (occupiedPositions.includes(position)) {
-            return; // Can't select occupied positions
+        // Check if position is already occupied (by ANYONE - user or others)
+        // Once a position is bought, no one can buy it again
+        if (occupiedPositions.includes(position) || userPositions.includes(position)) {
+            return; // Can't select any occupied position
         }
 
         // Check if already selected
@@ -34,17 +36,21 @@ export function PositionGrid({
     };
 
     const getPositionClass = (position) => {
-        if (occupiedPositions.includes(position)) {
+        // All occupied positions (user's or others') look the same
+        if (occupiedPositions.includes(position) || userPositions.includes(position)) {
             return 'position-cell occupied';
         }
+        // Selected for purchase
         if (selectedPositions.includes(position)) {
             return 'position-cell selected';
         }
+        // Available
         return 'position-cell available';
     };
 
     const getPositionContent = (position) => {
-        if (occupiedPositions.includes(position)) {
+        // All occupied positions show lock icon
+        if (occupiedPositions.includes(position) || userPositions.includes(position)) {
             return <><span className="lock-icon">🔒</span><span className="position-number">{position}</span></>;
         }
         if (selectedPositions.includes(position)) {
@@ -89,9 +95,10 @@ export function PositionGrid({
                         className={getPositionClass(position)}
                         onClick={() => handlePositionClick(position)}
                         disabled={occupiedPositions.includes(position) ||
+                            userPositions.includes(position) ||
                             (selectedPositions.length >= maxAllowed && !selectedPositions.includes(position))}
                         title={
-                            occupiedPositions.includes(position)
+                            (occupiedPositions.includes(position) || userPositions.includes(position))
                                 ? `Posición ${position} - Ocupada`
                                 : selectedPositions.includes(position)
                                     ? `Posición ${position} - Seleccionada (click para deseleccionar)`

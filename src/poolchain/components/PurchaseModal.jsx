@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { PositionGrid } from './PositionGrid';
 import './PurchaseModal.css';
 
@@ -15,38 +15,19 @@ export function PurchaseModal({
     onConfirm,
     isLoading,
     availablePositions = [],
+    occupiedPositions = [], // Recibir directamente del hook
     userPositions = []
 }) {
     const [selectedPositions, setSelectedPositions] = useState([]);
 
-    if (!isOpen) return null;
-
-    // Debug: Check what we're receiving
-    console.log('🔍 DEBUG - availablePositions:', availablePositions);
-    console.log('🔍 DEBUG - First 5 positions:', availablePositions?.slice(0, 5));
-    console.log('🔍 DEBUG - Type of first element:', typeof availablePositions?.[0]);
-
-    // Convert BigInt to Number if needed (contract returns BigInt)
-    const availablePositionsNumbers = availablePositions?.map(pos => Number(pos)) || [];
-    console.log('🔍 DEBUG - Converted positions:', availablePositionsNumbers.slice(0, 5));
-
-    // Get occupied positions (all positions NOT in availablePositions)
-    const occupiedPositions = [];
-
-    // If availablePositions is empty, assume ALL positions are available (new pool)
-    if (availablePositionsNumbers.length === 0) {
-        // Empty pool - all positions available, so occupiedPositions stays empty
-        console.log('✅ Pool vacío - todas las posiciones disponibles');
-    } else {
-        // Some positions are taken, calculate which ones are occupied
-        for (let i = 1; i <= 100; i++) {
-            if (!availablePositionsNumbers.includes(i)) {
-                occupiedPositions.push(i);
-            }
+    // Clear selections when modal closes
+    useEffect(() => {
+        if (!isOpen) {
+            setSelectedPositions([]);
         }
-        console.log('🔒 Posiciones ocupadas:', occupiedPositions.length, 'de 100');
-        console.log('✅ Posiciones disponibles:', availablePositionsNumbers.length);
-    }
+    }, [isOpen]);
+
+    if (!isOpen) return null;
 
     const totalCost = (selectedPositions.length * tier.entry).toFixed(2);
     const userBalance = parseFloat(usdtBalance) || 0;
@@ -59,10 +40,6 @@ export function PurchaseModal({
             const positionsArray = Array.isArray(selectedPositions)
                 ? selectedPositions
                 : Object.values(selectedPositions);
-
-            console.log('🎯 Sending positions to contract:', positionsArray);
-            console.log('🎯 Type:', typeof positionsArray);
-            console.log('🎯 Is Array:', Array.isArray(positionsArray));
 
             onConfirm(positionsArray);
         }
@@ -83,9 +60,10 @@ export function PurchaseModal({
                         <span className="price-value">{tier.entry} USDT</span>
                     </div>
 
-                    {/* Position Grid - NEW */}
+                    {/* Position Grid */}
                     <PositionGrid
                         occupiedPositions={occupiedPositions}
+                        userPositions={userPositions}
                         selectedPositions={selectedPositions}
                         onPositionToggle={setSelectedPositions}
                         maxSelections={20}
@@ -150,7 +128,10 @@ export function PurchaseModal({
                     </button>
                     <button
                         className="modal-btn primary"
-                        onClick={handleConfirm}
+                        onClick={(e) => {
+                            e.preventDefault();
+                            handleConfirm();
+                        }}
                         disabled={selectedPositions.length === 0 || !hasSufficientBalance || isLoading}
                     >
                         {isLoading ? '⏳ Procesando...' :

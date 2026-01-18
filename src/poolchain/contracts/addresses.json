@@ -1,6 +1,10 @@
 {
+  "bscTestnet": {
+    "MockUSDT": "0x7885Ab2E39eAAA6005364f7688E2B75FEC35Aa39",
+    "PoolChain_Final": "0x20C8d9689708d7d788f361d60D101397cec49fC7"
+  },
   "opBNBTestnet": {
     "MockUSDT": "0x2F767F0Bb9d715CF5356308e30b79B27D09a96DD",
-    "PoolChain_Micro_PositionSelect": "0x712329cAC1d30D04ABbe436f657037808014849E"
+    "PoolChain_Final": "0x31f6D2fe01462Cf424aff59f8FA6F4a39DC63273"
   }
 }

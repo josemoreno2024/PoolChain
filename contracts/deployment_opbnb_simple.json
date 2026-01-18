@@ -1,0 +1,11 @@
+{
+  "network": "opBNBTestnet",
+  "chainId": 5611,
+  "deployer": "0x1D6E67C6DF802A9cF021924F829513550ffE0024",
+  "timestamp": "2026-01-17T20:00:45.362Z",
+  "contracts": {
+    "MockUSDT": "0x2F767F0Bb9d715CF5356308e30b79B27D09a96DD",
+    "PoolChain_Simple": "0x544543a9665C65F48Ad4a5b81b5Ce57258905D2c"
+  },
+  "randomness": "block.prevrandao + multiple sources"
+}
