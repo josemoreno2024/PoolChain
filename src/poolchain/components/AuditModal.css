@@ -655,3 +655,149 @@
         padding: 6px 12px;
     }
 }
+/* ========== RANDOMNESS SECTION (Aleatoriedad) ========== */
+
+.randomness-section {
+    margin-top: 20px;
+    padding: 20px;
+    background: linear-gradient(135deg, rgba(251, 191, 36, 0.1) 0%, rgba(16, 185, 129, 0.1) 100%);
+    border: 2px solid rgba(251, 191, 36, 0.3);
+    border-radius: 12px;
+}
+
+.randomness-section h4 {
+    font-size: 1.1rem;
+    color: #fbbf24;
+    margin: 0 0 16px 0;
+    font-weight: 700;
+}
+
+.algorithm-block {
+    margin-bottom: 20px;
+}
+
+.randomness-algo {
+    background: rgba(251, 191, 36, 0.15);
+    border-left-color: #fbbf24;
+    color: #fbbf24;
+}
+
+.randomness-components {
+    margin: 20px 0;
+    padding: 16px;
+    background: rgba(30, 41, 59, 0.4);
+    border-radius: 8px;
+}
+
+.components-title {
+    font-size: 0.9rem;
+    color: #c4b5fd;
+    font-weight: 600;
+    margin-bottom: 12px;
+}
+
+.component-item {
+    margin: 12px 0;
+    padding: 12px;
+    background: rgba(139, 92, 246, 0.1);
+    border-radius: 6px;
+    border-left: 3px solid #8b5cf6;
+}
+
+.component-name {
+    font-size: 0.9rem;
+    color: #fbbf24;
+    font-weight: 700;
+    font-family: 'Courier New', monospace;
+    margin-bottom: 4px;
+}
+
+.component-desc {
+    font-size: 0.85rem;
+    color: #cbd5e1;
+    margin-bottom: 4px;
+}
+
+.component-why {
+    font-size: 0.8rem;
+    color: #94a3b8;
+    font-style: italic;
+}
+
+.randomness-guarantees {
+    margin: 20px 0;
+    padding: 16px;
+    background: rgba(16, 185, 129, 0.1);
+    border: 1px solid rgba(16, 185, 129, 0.3);
+    border-radius: 8px;
+}
+
+.guarantees-title {
+    font-size: 0.9rem;
+    color: #10b981;
+    font-weight: 700;
+    margin-bottom: 12px;
+}
+
+.guarantee-item {
+    font-size: 0.85rem;
+    color: #cbd5e1;
+    margin: 8px 0;
+    padding-left: 8px;
+}
+
+.randomness-verification {
+    margin-top: 20px;
+    padding: 16px;
+    background: rgba(139, 92, 246, 0.1);
+    border-radius: 8px;
+    border-left: 3px solid #8b5cf6;
+}
+
+.randomness-verification strong {
+    color: #a78bfa;
+    font-size: 0.95rem;
+    display: block;
+    margin-bottom: 12px;
+}
+
+.randomness-verification ol {
+    margin: 12px 0;
+    padding-left: 24px;
+}
+
+.randomness-verification li {
+    font-size: 0.85rem;
+    color: #cbd5e1;
+    margin: 8px 0;
+    line-height: 1.6;
+}
+
+.randomness-verification code {
+    font-family: 'Courier New', monospace;
+    color: #fbbf24;
+    background: rgba(251, 191, 36, 0.15);
+    padding: 2px 6px;
+    border-radius: 4px;
+}
+
+.randomness-verification em {
+    color: #a78bfa;
+    font-style: italic;
+}
+
+.verification-answer {
+    margin-top: 12px;
+    padding: 12px;
+    background: rgba(16, 185, 129, 0.15);
+    border-radius: 6px;
+    font-size: 0.85rem;
+    color: #cbd5e1;
+    line-height: 1.6;
+}
+
+.verification-answer strong {
+    color: #10b981;
+    display: inline;
+    margin: 0;
+}

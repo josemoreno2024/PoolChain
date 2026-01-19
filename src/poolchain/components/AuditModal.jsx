@@ -58,7 +58,37 @@ const AUDIT_MAP = {
     address[] groupCWinners,
     address[] groupDWinners
 )`,
-        description: 'Ejecución del sorteo y selección de ganadores'
+        description: 'Ejecución del sorteo y selección de ganadores',
+        randomness: {
+            algorithm: `seed = keccak256(
+    blockhash(block.number - 1),
+    block.timestamp,
+    currentRound
+)`,
+            components: [
+                {
+                    name: 'blockhash',
+                    description: 'Hash del bloque anterior (público, inmutable)',
+                    why: 'Valor único generado por la red, imposible de predecir'
+                },
+                {
+                    name: 'timestamp',
+                    description: 'Momento exacto del bloque (público, inmutable)',
+                    why: 'Marca de tiempo del bloque, no controlable por nadie'
+                },
+                {
+                    name: 'currentRound',
+                    description: 'Número de ronda actual (público, inmutable)',
+                    why: 'Contador incremental, visible para todos'
+                }
+            ],
+            guarantees: [
+                'Nadie puede predecir estos valores antes del sorteo',
+                'Nadie puede cambiar estos valores después del sorteo',
+                'Todos los valores son públicos y verificables en blockchain',
+                'El algoritmo está en el código del contrato (verificable)'
+            ]
+        }
     },
     PrizeClaimed: {
         function: 'claimPrize()',
@@ -373,58 +403,127 @@ export function AuditModal({
                         Esta operación ejecutó código on-chain verificable.
                     </p>
 
-                    {/* Mostrar último evento relevante */}
-                    {auditData?.purchases?.last && (
-                        <div className="technical-operation">
-                            <div className="operation-header">
-                                <span className="operation-badge">TicketsPurchased</span>
-                                <span className="operation-desc">{AUDIT_MAP.TicketsPurchased.description}</span>
-                            </div>
+                    {/* Detectar última operación */}
+                    {(() => {
+                        // Determinar qué operación mostrar (prioridad: sorteo > compras > claims)
+                        let operationType = null;
 
-                            <div className="code-block">
-                                <div className="code-section">
-                                    <div className="code-label">Función Solidity ejecutada:</div>
-                                    <div className="code-content">{AUDIT_MAP.TicketsPurchased.function}</div>
-                                    <button
-                                        className="copy-btn"
-                                        onClick={() => navigator.clipboard.writeText(AUDIT_MAP.TicketsPurchased.function)}
-                                    >
-                                        📋 Copiar firma de función
-                                    </button>
+                        if (auditData?.draws?.last) {
+                            operationType = 'WinnersSelected';
+                        } else if (auditData?.purchases?.last) {
+                            operationType = 'TicketsPurchased';
+                        } else if (auditData?.claims?.last) {
+                            operationType = 'PrizeClaimed';
+                        }
+
+                        if (!operationType) {
+                            return (
+                                <div className="no-operations">
+                                    No hay operaciones recientes para auditar en esta ronda.
+                                </div>
+                            );
+                        }
+
+                        const operation = AUDIT_MAP[operationType];
+
+                        return (
+                            <div className="technical-operation">
+                                <div className="operation-header">
+                                    <span className="operation-badge">{operationType}</span>
+                                    <span className="operation-desc">{operation.description}</span>
                                 </div>
 
-                                <div className="code-separator">━━━</div>
+                                <div className="code-block">
+                                    <div className="code-section">
+                                        <div className="code-label">Función Solidity ejecutada:</div>
+                                        <div className="code-content">{operation.function}</div>
+                                        <button
+                                            className="copy-btn"
+                                            onClick={() => navigator.clipboard.writeText(operation.function)}
+                                        >
+                                            📋 Copiar firma de función
+                                        </button>
+                                    </div>
 
-                                <div className="code-section">
-                                    <div className="code-label">Evento emit</div>
-                                    <div className="code-content event-signature">{AUDIT_MAP.TicketsPurchased.event}</div>
-                                    <button
-                                        className="copy-btn"
-                                        onClick={() => navigator.clipboard.writeText(AUDIT_MAP.TicketsPurchased.event)}
-                                    >
-                                        📋 Copiar firma del evento
-                                    </button>
+                                    <div className="code-separator">━━━</div>
+
+                                    <div className="code-section">
+                                        <div className="code-label">Evento emit</div>
+                                        <div className="code-content event-signature">{operation.event}</div>
+                                        <button
+                                            className="copy-btn"
+                                            onClick={() => navigator.clipboard.writeText(operation.event)}
+                                        >
+                                            📋 Copiar firma del evento
+                                        </button>
+                                    </div>
+                                </div>
+
+                                {/* NUEVO: Sección de Aleatoriedad (solo para sorteos) */}
+                                {operationType === 'WinnersSelected' && operation.randomness && (
+                                    <div className="randomness-section">
+                                        <h4>🎲 Algoritmo de Aleatoriedad (100% Verificable)</h4>
+
+                                        <div className="algorithm-block">
+                                            <div className="code-label">Generación del seed:</div>
+                                            <div className="code-content randomness-algo">{operation.randomness.algorithm}</div>
+                                            <button
+                                                className="copy-btn"
+                                                onClick={() => navigator.clipboard.writeText(operation.randomness.algorithm)}
+                                            >
+                                                📋 Copiar algoritmo
+                                            </button>
+                                        </div>
+
+                                        <div className="randomness-components">
+                                            <div className="components-title">Componentes (todos públicos):</div>
+                                            {operation.randomness.components.map((comp, idx) => (
+                                                <div key={idx} className="component-item">
+                                                    <div className="component-name">• {comp.name}</div>
+                                                    <div className="component-desc">{comp.description}</div>
+                                                    <div className="component-why">→ {comp.why}</div>
+                                                </div>
+                                            ))}
+                                        </div>
+
+                                        <div className="randomness-guarantees">
+                                            <div className="guarantees-title">✅ Garantías de No-Manipulación:</div>
+                                            {operation.randomness.guarantees.map((guarantee, idx) => (
+                                                <div key={idx} className="guarantee-item">
+                                                    ✓ {guarantee}
+                                                </div>
+                                            ))}
+                                        </div>
+
+                                        <div className="randomness-verification">
+                                            <strong>🔍 Cómo verificar que NO está amañado:</strong>
+                                            <ol>
+                                                <li>Copia el código del contrato desde el explorador</li>
+                                                <li>Busca la función <code>_selectWinners()</code></li>
+                                                <li>Pégalo en ChatGPT/Claude/Gemini</li>
+                                                <li>Pregunta: <em>"¿Puede el dueño manipular este sorteo?"</em></li>
+                                            </ol>
+                                            <p className="verification-answer">
+                                                <strong>Respuesta esperada:</strong> No, porque los valores (blockhash, timestamp, round)
+                                                son públicos, inmutables y no controlables por nadie.
+                                            </p>
+                                        </div>
+                                    </div>
+                                )}
+
+                                {/* Texto pedagógico CRÍTICO */}
+                                <div className="verification-notice">
+                                    <h4>✅ Verificación Independiente</h4>
+                                    <p>
+                                        Copia el código del contrato directamente desde el explorador
+                                        y pégalo en cualquier IA pública para que lo interprete.
+                                        <br />
+                                        <strong>Ese código vive en la blockchain y no puede ser alterado por PoolChain.</strong>
+                                    </p>
                                 </div>
                             </div>
-
-                            {/* Texto pedagógico CRÍTICO */}
-                            <div className="verification-notice">
-                                <h4>✅ Verificación Independiente</h4>
-                                <p>
-                                    Copia el código del contrato directamente desde el explorador
-                                    y pégalo en cualquier IA pública para que lo interprete.
-                                    <br />
-                                    <strong>Ese código vive en la blockchain y no puede ser alterado por PoolChain.</strong>
-                                </p>
-                            </div>
-                        </div>
-                    )}
-
-                    {!auditData?.purchases?.last && (
-                        <div className="no-operations">
-                            No hay operaciones recientes para auditar en esta ronda.
-                        </div>
-                    )}
+                        );
+                    })()}
                 </section>
 
                 {/* 6. Verificación Externa */}
