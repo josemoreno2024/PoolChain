@@ -625,6 +625,9 @@ export function usePoolChain() {
         // Contract addresses
         poolChainAddress,
         usdtAddress,
-        networkKey
+        networkKey,
+
+        // Contract ABI
+        poolChainABI
     };
 }

@@ -76,7 +76,9 @@
 }
 
 @keyframes spin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .loading-state p {
@@ -145,13 +147,51 @@
 
 .lottery-info {
   display: flex;
-  gap: 1rem;
+  flex-direction: column;
+  gap: 0.75rem;
   margin-bottom: 1rem;
+}
+
+.lottery-stats {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.stat-item {
+  color: rgba(255, 255, 255, 0.8);
   font-size: 0.9rem;
 }
 
+.stat-item strong {
+  color: white;
+  font-weight: 600;
+}
+
 .lottery-status {
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  font-weight: 600;
+  text-align: center;
+  font-size: 0.9rem;
+}
+
+.status-reclamado {
+  background: rgba(16, 185, 129, 0.2);
   color: #10b981;
+  border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+.status-pendiente {
+  background: rgba(102, 126, 234, 0.2);
+  color: #667eea;
+  border: 1px solid rgba(102, 126, 234, 0.3);
+}
+
+.status-sin-premio {
+  background: rgba(136, 136, 136, 0.2);
+  color: #888;
+  border: 1px solid rgba(136, 136, 136, 0.3);
 }
 
 .lottery-participants {
@@ -283,12 +323,13 @@
 
 /* Responsive */
 @media (max-width: 768px) {
+
   .history-modal-content,
   .details-modal-content {
     width: 95%;
     max-height: 90vh;
   }
-  
+
   .lottery-header {
     flex-direction: column;
     align-items: flex-start;

@@ -7,7 +7,12 @@ import { MyTicketsModal } from '../components/MyTicketsModal';
 import { CelebrationModal } from '../components/CelebrationModal';
 import { WinnerNotificationModal } from '../components/WinnerNotificationModal';
 import { HistoryModal } from '../components/HistoryModal';
+import { SystemActivityModal } from '../components/SystemActivityModal';
+import { AuditModal } from '../components/AuditModal';
 import { fetchUserTotalEarnings, getCachedEarnings, setCachedEarnings } from '../utils/earningsUtils';
+import { fetchContractActivity, formatTimeAgo } from '../utils/historyUtils';
+import { fetchPoolActivity, estimateTimeToFill, formatDuration, formatTicketRate, ACTIVITY_WINDOW_MINUTES } from '../utils/poolActivityUtils';
+import { getDeployBlock } from '../config/deployBlocks';
 import './PoolChainPage.css';
 
 export function PoolChainPage() {
@@ -298,7 +303,8 @@ function TierDashboard({ tier, onBack, address, publicClient }) {
         isLoading,
         currentRound,
         poolChainAddress,
-        networkKey
+        networkKey,
+        poolChainABI
     } = usePoolChain();
 
     const [showSuccessModal, setShowSuccessModal] = useState(false);
@@ -314,6 +320,12 @@ function TierDashboard({ tier, onBack, address, publicClient }) {
     const [showMyTicketsModal, setShowMyTicketsModal] = useState(false);
     const [showHistoryModal, setShowHistoryModal] = useState(false);
     const [totalEarnings, setTotalEarnings] = useState('0.00');
+    const [showActivityModal, setShowActivityModal] = useState(false);
+    const [contractActivity, setContractActivity] = useState(null);
+    const [poolActivity, setPoolActivity] = useState(null);
+    const [claimInProgress, setClaimInProgress] = useState(false);
+    const [showAuditModal, setShowAuditModal] = useState(false);
+
 
     // ========== CELEBRATION MODALS ==========
     const [showCelebration, setShowCelebration] = useState(false);
@@ -369,6 +381,36 @@ function TierDashboard({ tier, onBack, address, publicClient }) {
 
         loadTotalEarnings();
     }, [address, publicClient, poolChainAddress, networkKey, claimableAmount]); // Reload when claimableAmount changes (after claiming)
+
+    // Load contract activity (system stats)
+    useEffect(() => {
+        const loadActivity = async () => {
+            if (!publicClient || !poolChainAddress || !networkKey) return;
+
+            const fromBlock = getDeployBlock(networkKey);
+            const activity = await fetchContractActivity(publicClient, poolChainAddress, fromBlock);
+            setContractActivity(activity);
+        };
+
+        loadActivity();
+    }, [publicClient, poolChainAddress, networkKey]);
+
+    // Load pool activity (real-time activity)
+    useEffect(() => {
+        const loadPoolActivity = async () => {
+            if (!publicClient || !poolChainAddress || !networkKey || !currentRound) return;
+
+            const fromBlock = getDeployBlock(networkKey);
+            const activity = await fetchPoolActivity(publicClient, poolChainAddress, currentRound, fromBlock);
+            setPoolActivity(activity);
+        };
+
+        loadPoolActivity();
+
+        // Refresh every 30 seconds (interval handles updates)
+        const interval = setInterval(loadPoolActivity, 30000);
+        return () => clearInterval(interval);
+    }, [publicClient, poolChainAddress, networkKey, currentRound]); // participantCount removed - interval handles updates
 
     const showSuccess = (title, message, icon = '✅') => {
         setSuccessData({ title, message, icon });
@@ -840,43 +882,152 @@ function TierDashboard({ tier, onBack, address, publicClient }) {
                     </div>
                 </div>
 
-                {/* Section Header: Estado del Pool */}
+                {/* System Status Badge */}
+                {contractActivity && contractActivity.totalExecuted > 0 && (
+                    <div style={{
+                        background: 'rgba(16, 185, 129, 0.1)',
+                        border: '1px solid rgba(16, 185, 129, 0.3)',
+                        borderRadius: '12px',
+                        padding: '1rem',
+                        marginBottom: '1.5rem',
+                        fontSize: '0.85rem'
+                    }}>
+                        <div style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '0.5rem',
+                            color: 'rgba(255, 255, 255, 0.8)',
+                            marginBottom: '0.5rem'
+                        }}>
+                            <span style={{ fontSize: '0.7rem' }}>🟢</span>
+                            <span>Sistema activo · Sorteo #{currentRound} en curso · Última ejecución: {formatTimeAgo(contractActivity.lastRoundDate)}</span>
+                        </div>
+                        <button
+                            onClick={() => setShowActivityModal(true)}
+                            style={{
+                                background: 'none',
+                                border: 'none',
+                                color: '#667eea',
+                                cursor: 'pointer',
+                                fontSize: '0.85rem',
+                                padding: 0,
+                                textDecoration: 'underline',
+                                transition: 'color 0.2s'
+                            }}
+                            onMouseEnter={(e) => e.target.style.color = '#764ba2'}
+                            onMouseLeave={(e) => e.target.style.color = '#667eea'}
+                        >
+                            📊 Ver actividad del contrato →
+                        </button>
+                    </div>
+                )}
+
+                {/* Section Header: Actividad del Pool */}
                 <div className="section-header">
                     <h2>
                         <span className="section-icon">📊</span>
-                        Estado del Pool (Tiempo Real)
+                        Actividad del Pool
                     </h2>
-                    <Tooltip content="Progreso actual del sorteo: participantes, fondos acumulados y estado">
+                    <Tooltip content="Actividad en tiempo real del sorteo actual">
                         <span className="tooltip-icon">?</span>
                     </Tooltip>
                 </div>
 
-                {/* Pool Status */}
+                {/* Pool Activity Card */}
                 <div className="pool-status-card">
-                    <h3>📊 Estado del Pool</h3>
-                    <div className="pool-progress">
-                        <div className="progress-bar">
+                    {/* Minimized Progress Bar */}
+                    <div className="pool-progress-minimized">
+                        <div className="progress-bar-small">
                             <div
                                 className="progress-fill"
-                                style={{ width: `${(participantCount / tier.maxSlots) * 100}% ` }}
+                                style={{ width: `${(participantCount / tier.maxSlots) * 100}%` }}
                             ></div>
                         </div>
-                        <div className="progress-text">
-                            {participantCount} / {tier.maxSlots} participantes
+                        <div className="progress-text-small">
+                            {participantCount} / {tier.maxSlots}
                         </div>
                     </div>
-                    <div className="pool-stats">
-                        <div className="pool-stat">
-                            <span>Pool Actual:</span>
-                            <strong>{currentPool} USDT</strong>
+
+                    {poolActivity && poolActivity.hasActivity ? (
+                        <>
+                            {/* Ritmo de Participación */}
+                            <div className="activity-section">
+                                <h4 className="activity-title">📈 Ritmo de participación</h4>
+                                <div className="activity-info">
+                                    <span>• +{poolActivity.ticketsLast10Min} ticket{poolActivity.ticketsLast10Min !== 1 ? 's' : ''} en los últimos {ACTIVITY_WINDOW_MINUTES} min</span>
+                                    {poolActivity.lastPurchaseTime && (
+                                        <span>• Última entrada: {formatTimeAgo(poolActivity.lastPurchaseTime)}</span>
+                                    )}
+                                </div>
+                            </div>
+
+                            {/* Estimación de Cierre */}
+                            {poolActivity.avgTimePerTicket && (
+                                <div className="activity-section">
+                                    <h4 className="activity-title">⏱️ Según ritmo reciente</h4>
+                                    <div className="activity-info">
+                                        <span>• {formatTicketRate(poolActivity.avgTimePerTicket)}</span>
+                                        {(() => {
+                                            const remaining = tier.maxSlots - participantCount;
+                                            const estimated = estimateTimeToFill(poolActivity.avgTimePerTicket, remaining);
+                                            return estimated ? (
+                                                <>
+                                                    <span>• Llenado estimado: {formatDuration(estimated)}</span>
+                                                    <span className="activity-disclaimer">(basado en últimos 10 tickets)</span>
+                                                </>
+                                            ) : null;
+                                        })()}
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* Actividad Reciente */}
+                            {poolActivity.recentActivities && poolActivity.recentActivities.length > 0 && (
+                                <div className="activity-section">
+                                    <h4 className="activity-title">🟢 Actividad reciente</h4>
+                                    <div className="activity-list">
+                                        {poolActivity.recentActivities.map((activity, idx) => (
+                                            <div key={idx} className="activity-item">
+                                                <span>• {activity.buyer} compró {activity.quantity} ticket{activity.quantity !== 1 ? 's' : ''}</span>
+                                                <span className="activity-time">{activity.timeAgo}</span>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* Sistema Activo */}
+                            <div className="system-active">
+                                <span>✓ Sistema activo</span>
+                                <button
+                                    className="audit-link"
+                                    onClick={() => setShowAuditModal(true)}
+                                >
+                                    🔍 Auditar este sorteo →
+                                </button>
+                            </div>
+                        </>
+                    ) : (
+                        /* Sin actividad reciente */
+                        <div className="activity-section">
+                            <h4 className="activity-title">📈 Ritmo de participación</h4>
+                            <div className="activity-info">
+                                <span>• Sin actividad en los últimos {ACTIVITY_WINDOW_MINUTES} min</span>
+                                {poolActivity?.lastPurchaseTime && (
+                                    <span>• Última entrada: {formatTimeAgo(poolActivity.lastPurchaseTime)}</span>
+                                )}
+                            </div>
+                            <div className="system-active" style={{ marginTop: '1rem' }}>
+                                <span>✓ Sistema activo</span>
+                                <button
+                                    className="audit-link"
+                                    onClick={() => setShowAuditModal(true)}
+                                >
+                                    🔍 Auditar este sorteo →
+                                </button>
+                            </div>
                         </div>
-                        <div className="pool-stat">
-                            <span>Estado:</span>
-                            <strong className={poolFilled ? 'status-filled' : 'status-open'}>
-                                {poolFilled ? '✓ Lleno' : '○ Abierto'}
-                            </strong>
-                        </div>
-                    </div>
+                    )}
                 </div>
 
                 {/* Section Header: Tu Resumen */}
@@ -1009,7 +1160,7 @@ function TierDashboard({ tier, onBack, address, publicClient }) {
 
 
                 {/* Banner de Premios Pendientes */}
-                {address && parseFloat(claimableAmount) > 0 && (
+                {address && !claimInProgress && parseFloat(claimableAmount) > 0 && (
                     <div style={{
                         background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
                         padding: '1.5rem',
@@ -1030,14 +1181,21 @@ function TierDashboard({ tier, onBack, address, publicClient }) {
                         <button
                             onClick={async () => {
                                 try {
+                                    setClaimInProgress(true);
                                     await claimPrize();
+
+                                    // 🔥 Actualización inmediata del estado on-chain
+                                    await refreshAllData();
+
+                                    setClaimInProgress(false);
                                     showSuccess('Premio Reclamado', `Has reclamado ${claimableAmount} USDT exitosamente`, '💎');
                                 } catch (error) {
+                                    setClaimInProgress(false);
                                     console.error('Error al reclamar premio:', error);
                                     alert('Error al reclamar premio: ' + error.message);
                                 }
                             }}
-                            disabled={isLoading}
+                            disabled={isLoading || claimInProgress}
                             style={{
                                 padding: '0.75rem 2rem',
                                 background: 'white',
@@ -1360,6 +1518,25 @@ function TierDashboard({ tier, onBack, address, publicClient }) {
                     poolChainAddress={poolChainAddress}
                     networkKey={networkKey}
                     userAddress={address}
+                />
+
+                <SystemActivityModal
+                    isOpen={showActivityModal}
+                    onClose={() => setShowActivityModal(false)}
+                    activity={contractActivity}
+                    currentRound={currentRound}
+                    participantCount={participantCount}
+                    maxSlots={tier.maxSlots}
+                />
+
+                {/* Audit Modal */}
+                <AuditModal
+                    isOpen={showAuditModal}
+                    onClose={() => setShowAuditModal(false)}
+                    poolChainAddress={poolChainAddress}
+                    poolChainABI={poolChainABI}
+                    tier={tier}
+                    publicClient={publicClient}
                 />
             </div>
         </div >

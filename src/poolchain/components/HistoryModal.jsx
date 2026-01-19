@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { usePublicClient } from 'wagmi';
-import { fetchLotteryHistory, getCachedHistory, setCachedHistory } from '../utils/historyUtils';
+import { fetchUserLotteryHistory, getCachedHistory, setCachedHistory } from '../utils/historyUtils';
 import { getDeployBlock } from '../config/deployBlocks';
 import './HistoryModal.css';
 
@@ -12,28 +12,29 @@ export function HistoryModal({ isOpen, onClose, poolChainAddress, networkKey, us
     const publicClient = usePublicClient();
 
     useEffect(() => {
-        if (isOpen && publicClient) {
+        if (isOpen && publicClient && userAddress) {
             loadHistory();
         }
-    }, [isOpen, publicClient]);
+    }, [isOpen, publicClient, userAddress]);
 
     const loadHistory = async () => {
         setLoading(true);
 
-        // Intentar cargar desde cache primero
-        const cached = getCachedHistory(networkKey);
+        // Intentar cargar desde cache primero (cache por usuario)
+        const cacheKey = `${networkKey}_${userAddress}`;
+        const cached = getCachedHistory(cacheKey);
         if (cached) {
             setLotteries(cached);
             setLoading(false);
             return;
         }
 
-        // Leer desde blockchain
+        // Leer historial PERSONAL desde blockchain
         const fromBlock = getDeployBlock(networkKey);
-        const history = await fetchLotteryHistory(publicClient, poolChainAddress, fromBlock);
+        const history = await fetchUserLotteryHistory(publicClient, poolChainAddress, userAddress, fromBlock);
 
         setLotteries(history);
-        setCachedHistory(networkKey, history);
+        setCachedHistory(cacheKey, history);
         setLoading(false);
     };
 
@@ -43,7 +44,7 @@ export function HistoryModal({ isOpen, onClose, poolChainAddress, networkKey, us
         <div className="history-modal-overlay" onClick={onClose}>
             <div className="history-modal-content" onClick={(e) => e.stopPropagation()}>
                 <div className="history-modal-header">
-                    <h2>📜 Historial de Sorteos</h2>
+                    <h2>📜 Mi Historial</h2>
                     <button className="close-btn" onClick={onClose}>✕</button>
                 </div>
 
@@ -51,13 +52,13 @@ export function HistoryModal({ isOpen, onClose, poolChainAddress, networkKey, us
                     {loading ? (
                         <div className="loading-state">
                             <div className="spinner"></div>
-                            <p>Cargando historial desde blockchain...</p>
+                            <p>Cargando tu historial desde blockchain...</p>
                         </div>
                     ) : lotteries.length === 0 ? (
                         <div className="empty-state">
                             <div className="empty-icon">🎲</div>
-                            <h3>Aún no hay sorteos</h3>
-                            <p>Los sorteos completados aparecerán aquí</p>
+                            <h3>Aún no has participado</h3>
+                            <p>Cuando compres tickets en un sorteo, tu historial aparecerá aquí</p>
                         </div>
                     ) : (
                         <div className="lotteries-list">
@@ -77,8 +78,22 @@ export function HistoryModal({ isOpen, onClose, poolChainAddress, networkKey, us
                                     </div>
 
                                     <div className="lottery-info">
-                                        <span className="lottery-status">✅ Completado</span>
-                                        <span className="lottery-participants">100 participantes</span>
+                                        <div className="lottery-stats">
+                                            <span className="stat-item">
+                                                🎫 Compraste: <strong>{lottery.ticketsPurchased} ticket{lottery.ticketsPurchased !== 1 ? 's' : ''}</strong>
+                                            </span>
+                                            <span className="stat-item">
+                                                💰 Invertiste: <strong>{lottery.totalCost} USDT</strong>
+                                            </span>
+                                            <span className="stat-item">
+                                                🏆 Ganaste: <strong>{lottery.prizeWon} USDT</strong>
+                                            </span>
+                                        </div>
+                                        <span className={`lottery-status status-${lottery.status.toLowerCase().replace(' ', '-')}`}>
+                                            {lottery.status === 'Reclamado' ? '✅ Reclamado' :
+                                                lottery.status === 'Pendiente' ? '💎 Pendiente' :
+                                                    '○ Sin premio'}
+                                        </span>
                                     </div>
 
                                     <button
