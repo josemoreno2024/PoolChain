@@ -1,6 +1,6 @@
 /**
  * ═══════════════════════════════════════════════════════════════════
- * PoolChain - SiSistema de Sorteos en Blochain Descentralizada
+ * PoolChain - Sistema de Sorteos en Blochain Descentralizada
  * ═══════════════════════════════════════════════════════════════════
  *
  * @archivo COPYRIGHT_HEADER.js
