@@ -34,7 +34,7 @@ pragma solidity ^0.8.20;
  * ✗ Copia de la lógica de negocio
  * ✗ Modificación y venta del sistema
  * 
- * Para consultas comerciales: contacto@sandigital.com
+ * Para consultas comerciales: jose01.moreno@gmail.com
  * 
  * AVISO LEGAL:
  * ────────────

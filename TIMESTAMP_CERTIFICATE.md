@@ -88,7 +88,7 @@ Este código está protegido por:
 ❌ Modificación y venta del sistema  
 ❌ Copia de la lógica de negocio
 
-**Para consultas comerciales:** contacto@sandigital.com
+**Para consultas comerciales:** jose01.moreno@gmail.com
 
 ---
 

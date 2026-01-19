@@ -71,6 +71,6 @@ solidez pragma ^0.8.20;
  * • Verificación: https://cipsc.coloriuris.net/tsa/
  *
  * Licencia MIT (uso comercial restringido)
- *Para consultas: contacto@sandigital.com
+ *Para consultas: jose01.moreno@gmail.com
  * ═══════════════════════════════════════════════════════════════════
  */`;

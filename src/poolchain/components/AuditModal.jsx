@@ -16,7 +16,7 @@
  * • Verificación: https://cipsc.coloriuris.net/tsa/
  * 
  * Licencia: MIT (uso comercial restringido)
- * Para consultas: contacto@sandigital.com
+ * Para consultas: jose01.moreno@gmail.com
  * 
  * ═══════════════════════════════════════════════════════════════════
  */
