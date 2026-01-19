@@ -29,6 +29,55 @@ import './AuditModal.css';
 // Límite de eventos para evitar RPC overload
 const MAX_AUDIT_ROUNDS = 10;
 
+// ═══════════════════════════════════════════════════════════════
+// MAPA DE AUDITORÍA TÉCNICA (Verdad On-Chain)
+// ═══════════════════════════════════════════════════════════════
+
+/**
+ * Mapeo de eventos a funciones Solidity exactas
+ * Este mapa NO interpreta, solo señala qué buscar en el explorador
+ */
+const AUDIT_MAP = {
+    TicketsPurchased: {
+        function: 'buyTickets(uint256[] calldata positions)',
+        event: `TicketsPurchased(
+    address indexed buyer,
+    uint256[] positions,
+    uint256 quantity,
+    uint256 totalCost,
+    uint256 indexed round
+)`,
+        description: 'Compra de tickets en posiciones específicas'
+    },
+    WinnersSelected: {
+        function: 'performDraw()',
+        event: `WinnersSelected(
+    uint256 indexed round,
+    address[] groupAWinners,
+    address[] groupBWinners,
+    address[] groupCWinners,
+    address[] groupDWinners
+)`,
+        description: 'Ejecución del sorteo y selección de ganadores'
+    },
+    PrizeClaimed: {
+        function: 'claimPrize()',
+        event: `PrizeClaimed(
+    address indexed winner,
+    uint256 amount
+)`,
+        description: 'Reclamo de premio por parte del ganador'
+    },
+    RoundReset: {
+        function: 'resetRound()',
+        event: `RoundReset(
+    uint256 indexed round
+)`,
+        description: 'Reseteo de ronda (solo administrador)'
+    }
+};
+
+
 export function AuditModal({
     isOpen,
     onClose,
@@ -317,7 +366,68 @@ export function AuditModal({
                     )}
                 </section>
 
-                {/* 5. Verificación Externa */}
+                {/* 5. Auditoría Técnica (NUEVO - Arquitectura de Confianza) */}
+                <section className="audit-section technical-audit">
+                    <h3>🔍 Auditoría Técnica de la Operación</h3>
+                    <p className="audit-intro">
+                        Esta operación ejecutó código on-chain verificable.
+                    </p>
+
+                    {/* Mostrar último evento relevante */}
+                    {auditData?.purchases?.last && (
+                        <div className="technical-operation">
+                            <div className="operation-header">
+                                <span className="operation-badge">TicketsPurchased</span>
+                                <span className="operation-desc">{AUDIT_MAP.TicketsPurchased.description}</span>
+                            </div>
+
+                            <div className="code-block">
+                                <div className="code-section">
+                                    <div className="code-label">Función Solidity ejecutada:</div>
+                                    <div className="code-content">{AUDIT_MAP.TicketsPurchased.function}</div>
+                                    <button
+                                        className="copy-btn"
+                                        onClick={() => navigator.clipboard.writeText(AUDIT_MAP.TicketsPurchased.function)}
+                                    >
+                                        📋 Copiar firma de función
+                                    </button>
+                                </div>
+
+                                <div className="code-separator">━━━</div>
+
+                                <div className="code-section">
+                                    <div className="code-label">Evento emit</div>
+                                    <div className="code-content event-signature">{AUDIT_MAP.TicketsPurchased.event}</div>
+                                    <button
+                                        className="copy-btn"
+                                        onClick={() => navigator.clipboard.writeText(AUDIT_MAP.TicketsPurchased.event)}
+                                    >
+                                        📋 Copiar firma del evento
+                                    </button>
+                                </div>
+                            </div>
+
+                            {/* Texto pedagógico CRÍTICO */}
+                            <div className="verification-notice">
+                                <h4>✅ Verificación Independiente</h4>
+                                <p>
+                                    Copia el código del contrato directamente desde el explorador
+                                    y pégalo en cualquier IA pública para que lo interprete.
+                                    <br />
+                                    <strong>Ese código vive en la blockchain y no puede ser alterado por PoolChain.</strong>
+                                </p>
+                            </div>
+                        </div>
+                    )}
+
+                    {!auditData?.purchases?.last && (
+                        <div className="no-operations">
+                            No hay operaciones recientes para auditar en esta ronda.
+                        </div>
+                    )}
+                </section>
+
+                {/* 6. Verificación Externa */}
                 <section className="audit-section">
                     <h3>Verificación Externa</h3>
                     <div className="verification-links">
