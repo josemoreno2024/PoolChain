@@ -1,6 +1,6 @@
 /**
  * ═══════════════════════════════════════════════════════════════════
- * PoolChain - Sistema de Lotería Descentralizada
+ * PoolChain - Sistema de Sorteo Descentralizada
  * ═══════════════════════════════════════════════════════════════════
  * 
  * @file COPYRIGHT_HEADER.js
@@ -25,7 +25,7 @@
 
 export const COPYRIGHT_HEADER_JS = `/**
  * ═══════════════════════════════════════════════════════════════════
- * PoolChain - Sistema de Lotería Descentralizada
+ * PoolChain - Sistema de Sorteo Descentralizada
  * ═══════════════════════════════════════════════════════════════════
  * 
  * @author SanDigital / Coliriun
@@ -41,7 +41,7 @@ export const COPYRIGHT_HEADER_JS = `/**
 
 export const COPYRIGHT_HEADER_CSS = `/*
  * ═══════════════════════════════════════════════════════════════════
- * PoolChain - Sistema de Lotería Descentralizada
+ * PoolChain - Sistema de Sorteo Descentralizada
  * ═══════════════════════════════════════════════════════════════════
  * 
  * @author SanDigital / Coliriun
@@ -59,7 +59,7 @@ pragma solidity ^0.8.20;
 
 /**
  * ═══════════════════════════════════════════════════════════════════
- * PoolChain - Sistema de Lotería Descentralizada
+ * PoolChain - Sistema de Sorteo Descentralizada
  * ═══════════════════════════════════════════════════════════════════
  * 
  * @author SanDigital / Coliriun
