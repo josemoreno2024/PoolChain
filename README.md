@@ -1,6 +1,6 @@
 /**
  * ═══════════════════════════════════════════════════════════════════
- * PoolChain - Sistema de Sorteos en Blochain Descentralizada
+ * PoolChain - Sistema de Sorteos en blockchain Descentralizada
  * ═══════════════════════════════════════════════════════════════════
  *
  * @archivo COPYRIGHT_HEADER.js
@@ -25,7 +25,7 @@
 
 exportar constante COPYRIGHT_HEADER_JS = `/**
  * ═══════════════════════════════════════════════════════════════════
- * PoolChain - Sistema de Sorteos en Blochain Descentralizada
+ * PoolChain - Sistema de Sorteos en blockchain Descentralizada
  * ═══════════════════════════════════════════════════════════════════
  *
  *@autor SanDigital/Coliriun
@@ -41,7 +41,7 @@ exportar constante COPYRIGHT_HEADER_JS = `/**
 
 exportar constante COPYRIGHT_HEADER_CSS = `/*
  * ═══════════════════════════════════════════════════════════════════
- * PoolChain - Sistema de Sorteos en Blochain Descentralizada
+ * PoolChain - Sistema de Sorteos en blockchain Descentralizada
  * ═══════════════════════════════════════════════════════════════════
  *
  *@autor SanDigital/Coliriun
@@ -59,7 +59,7 @@ solidez pragma ^0.8.20;
 
 /**
  * ═══════════════════════════════════════════════════════════════════
- * PoolChain - Sistema de Sorteos en Blochain Descentralizada
+ * PoolChain - Sistema de Sorteos en blockchain Descentralizada
  * ═══════════════════════════════════════════════════════════════════
  *
  *@autor SanDigital/Coliriun
