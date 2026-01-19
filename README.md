@@ -41,7 +41,7 @@ exportar constante COPYRIGHT_HEADER_JS = `/**
 
 exportar constante COPYRIGHT_HEADER_CSS = `/*
  * ═══════════════════════════════════════════════════════════════════
- * PoolChain - Sistema de Lotería Descentralizada
+ * PoolChain - Sistema de Sorteos en Blochain Descentralizada
  * ═══════════════════════════════════════════════════════════════════
  *
  *@autor SanDigital/Coliriun
