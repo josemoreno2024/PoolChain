@@ -46,3 +46,4 @@ coverage/
 wallets.json
 *.private.json
 contracts/scripts/wallets.json
+contracts/.env
