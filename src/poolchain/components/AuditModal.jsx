@@ -534,14 +534,7 @@ export function AuditModal({
                 <section className="audit-section">
                     <h3>Verificación Externa</h3>
                     <div className="verification-links">
-                        <a
-                            href={`${explorerUrl}/address/${poolChainAddress}#code`}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="verify-link primary"
-                        >
-                            💻 Ver código del contrato (cópialo y verifica con IA)
-                        </a>
+
                         <a
                             href={`${explorerUrl}/address/${poolChainAddress}`}
                             target="_blank"
