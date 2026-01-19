@@ -1,6 +1,6 @@
 /**
  * ═══════════════════════════════════════════════════════════════════
- * PoolChain - Sistema de Lotería Descentralizada
+ * PoolChain - SiSistema de Sorteos en Blochain Descentralizada
  * ═══════════════════════════════════════════════════════════════════
  *
  * @archivo COPYRIGHT_HEADER.js
@@ -25,7 +25,7 @@
 
 exportar constante COPYRIGHT_HEADER_JS = `/**
  * ═══════════════════════════════════════════════════════════════════
- * PoolChain - Sistema de Lotería Descentralizada
+ * PoolChain - Sistema de Sorteos en Blochain Descentralizada
  * ═══════════════════════════════════════════════════════════════════
  *
  *@autor SanDigital/Coliriun
@@ -59,7 +59,7 @@ solidez pragma ^0.8.20;
 
 /**
  * ═══════════════════════════════════════════════════════════════════
- * PoolChain - Sistema de Lotería Descentralizada
+ * PoolChain - Sistema de Sorteos en Blochain Descentralizada
  * ═══════════════════════════════════════════════════════════════════
  *
  *@autor SanDigital/Coliriun
