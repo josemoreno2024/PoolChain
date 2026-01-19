@@ -43,7 +43,7 @@ Este código se distribuye bajo **Licencia MIT** con las siguientes condiciones:
 
 ### 📧 Contacto Comercial
 Para solicitudes de licencia comercial:  
-**Email:** contacto@sandigital.com
+**Email:** jose01.moreno@gmail.com
 
 ---
 
