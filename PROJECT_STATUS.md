@@ -176,5 +176,5 @@ rm -rf node_modules/.vite      # Limpiar caché de Vite
 
 ---
 
-**Mantenido por:** Antigravity AI  
+**Mantenido por:** Sistema Editor Avanzado AI  
 **Última Revisión:** 2026-01-02 23:50 CET

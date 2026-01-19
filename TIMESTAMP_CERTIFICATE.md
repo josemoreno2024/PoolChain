@@ -61,7 +61,7 @@ dd9d06efabd7271ae12576ee18803616c40464b1f8f9d24769232f23b7312292
 
 ## 📋 Información del Proyecto
 
-**Nombre:** PoolChain - Sistema de Lotería Descentralizada  
+**Nombre:** PoolChain - Sistema de Sorteo Descentralizada  
 **Autor:** SanDigital / Coliriun  
 **Tecnología:** Solidity ^0.8.20, React, opBNB  
 **Licencia:** MIT (con reserva de derechos comerciales)

@@ -2,10 +2,10 @@
 pragma solidity ^0.8.20;
 
 /**
- * @title PoolChain - Sistema de Lotería Descentralizada
+ * @title PoolChain - Sistema de Sorteo Descentralizada
  * @author SanDigital / Coliriun
  * @notice Sistema 100% on-chain, auditable y sin intervención humana
- * @dev Contrato de lotería con distribución automática de premios
+ * @dev Contrato de sorteo con distribución automática de premios
  * 
  * ═══════════════════════════════════════════════════════════════════
  * 
@@ -52,7 +52,7 @@ pragma solidity ^0.8.20;
  * ARQUITECTURA DEL SISTEMA:
  * ─────────────────────────
  * 
- * PoolChain implementa un sistema de lotería descentralizada donde:
+ * PoolChain implementa un sistema de sorteo descentralizada donde:
  * 
  * 1. VENTA DE TICKETS
  *    - Los usuarios compran tickets con USDT
@@ -91,7 +91,7 @@ import "@openzeppelin/contracts/utils/Pausable.sol";
 
 /**
  * @notice Contrato principal de PoolChain
- * @dev Implementa lógica de lotería con distribución automática
+ * @dev Implementa lógica de sorteo con distribución automática
  */
 contract PoolChain is Ownable, ReentrancyGuard, Pausable {
     

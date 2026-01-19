@@ -7,7 +7,7 @@
 ### Autoría y Diseño
 - **Diseñado por:** Coliriun
 - **Desarrollado por:** SanDigital
-- **Proyecto:** PoolChain - Sistema de Lotería Descentralizada
+- **Proyecto:** PoolChain - Sistema de Sorteo Descentralizada
 
 ### Protección Legal
 Este proyecto está protegido mediante:

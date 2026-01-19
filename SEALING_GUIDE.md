@@ -58,7 +58,7 @@ Los siguientes archivos deben incluir el header:
 ```javascript
 /**
  * ═══════════════════════════════════════════════════════════════════
- * PoolChain - Sistema de Lotería Descentralizada
+ * PoolChain - Sistema de Sorteo Descentralizada
  * ═══════════════════════════════════════════════════════════════════
  * 
  * @author SanDigital / Coliriun

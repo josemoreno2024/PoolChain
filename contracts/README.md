@@ -1,8 +1,8 @@
-# PoolChain - Sistema de Lotería Autónomo
+# PoolChain - Sistema de Sorteo Autónomo
 
 ## Contratos
 
-- **PoolChain_Hybrid_Auto.sol** - Contrato principal de lotería con selección de posiciones y sorteo 100% automático
+- **PoolChain_Hybrid_Auto.sol** - Contrato principal de sorteo con selección de posiciones y sorteo 100% automático
 - **MockUSDT.sol** - Token USDT de prueba para BSC Testnet
 
 ## Scripts

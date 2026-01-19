@@ -237,6 +237,6 @@ contracts/.env
 
 ---
 
-**Auditoría realizada por:** Antigravity AI  
+**Auditoría realizada por:** Sistema Editor Avanzado AI  
 **Commit de seguridad:** `3ebd2a9`  
 **Estado:** ✅ REPOSITORIO SEGURO
