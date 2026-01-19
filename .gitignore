@@ -1,53 +1,153 @@
-# Dependencies
+# ═══════════════════════════════════════════════════════════════
+# .gitignore - PoolChain Security Hardened
+# ═══════════════════════════════════════════════════════════════
+# Copyright © 2026 SanDigital - Todos los derechos reservados
+# Protegido por sello de tiempo eIDAS (Serie: 58485363)
+# ═══════════════════════════════════════════════════════════════
+
+# ============================================
+# DEPENDENCIES
+# ============================================
 node_modules/
 package-lock.json
+yarn.lock
+pnpm-lock.yaml
 
-# Build artifacts
+# ============================================
+# BUILD ARTIFACTS
+# ============================================
 dist/
 build/
 *.tsbuildinfo
+.next/
+out/
 
-# Hardhat
+# ============================================
+# HARDHAT
+# ============================================
 contracts/artifacts/
 contracts/cache/
 contracts/typechain-types/
 
-# Environment variables
+# ============================================
+# ENVIRONMENT VARIABLES (CRITICAL - NEVER COMMIT)
+# ============================================
 .env
+.env.*
+!.env.example
 .env.local
-.env.*.local
+.env.development.local
+.env.test.local
+.env.production.local
 
+# ============================================
+# WALLET SECURITY (CRITICAL - NEVER COMMIT)
+# ============================================
+# Archivos de wallets
+wallets.json
+*wallet*.json
+*.wallet.json
+keystore/
+*.keystore
+
+# Private keys y mnemonics
+*.private.json
+*.private.key
+*.pem
+*.key
+mnemonic.txt
+seed.txt
+
+# Archivos específicos de contratos
+contracts/.env
+contracts/.env.*
+!contracts/.env.example
+contracts/scripts/wallets.json
+contracts/scripts/*wallet*.json
+
+# ============================================
+# TESTING DATA (CRITICAL - NEVER COMMIT)
+# ============================================
+# Carpetas de testing con datos sensibles
+contracts/archive/
+test_wallets.json
+*test_wallet*.json
+test_data/
+mock_wallets/
+
+# ============================================
 # IDE
+# ============================================
 .vscode/
 .idea/
 *.swp
 *.swo
 *~
 
+# ============================================
 # OS
+# ============================================
 .DS_Store
 Thumbs.db
+desktop.ini
 
-# Logs
+# ============================================
+# LOGS
+# ============================================
 *.log
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+lerna-debug.log*
+.pnpm-debug.log*
 
-# Coverage
+# ============================================
+# COVERAGE
+# ============================================
 coverage/
 .nyc_output/
+*.lcov
 
-# Temporary files
+# ============================================
+# TEMPORARY FILES
+# ============================================
 *.tmp
+*.temp
 .cache/
+.parcel-cache/
 
-# Wallet Security (CRITICAL - DO NOT COMMIT)
-wallets.json
-*.private.json
-contracts/scripts/wallets.json
-contracts/.env
-# Archivos de testing con datos sensibles
-contracts/archive/
-*.private.json
-test_wallets.json
+# ============================================
+# SECRETS & API KEYS (CRITICAL - NEVER COMMIT)
+# ============================================
+secrets/
+*.secret
+*.secrets.json
+api_keys.json
+credentials.json
+
+# ============================================
+# BACKUP FILES (MAY CONTAIN SENSITIVE DATA)
+# ============================================
+*.backup
+*.bak
+*.old
+*_backup/
+backup/
+
+# ============================================
+# DATABASE (MAY CONTAIN SENSITIVE DATA)
+# ============================================
+*.db
+*.sqlite
+*.sqlite3
+
+# ============================================
+# DEPLOYMENT (MAY CONTAIN SENSITIVE DATA)
+# ============================================
+.vercel/
+.netlify/
+.firebase/
+
+# ═══════════════════════════════════════════════════════════════
+# END OF SECURITY HARDENED .gitignore
+# ═══════════════════════════════════════════════════════════════
