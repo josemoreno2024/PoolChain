@@ -403,34 +403,22 @@ export function AuditModal({
                         Esta operación ejecutó código on-chain verificable.
                     </p>
 
-                    {/* Detectar última operación */}
+                    {/* Sistema de Auditoría de Sorteos */}
                     {(() => {
-                        // Determinar qué operación mostrar (prioridad: sorteo > compras > claims)
-                        let operationType = null;
-
-                        if (auditData?.draws?.last) {
-                            operationType = 'WinnersSelected';
-                        } else if (auditData?.purchases?.last) {
-                            operationType = 'TicketsPurchased';
-                        } else if (auditData?.claims?.last) {
-                            operationType = 'PrizeClaimed';
-                        }
-
-                        if (!operationType) {
-                            return (
-                                <div className="no-operations">
-                                    No hay operaciones recientes para auditar en esta ronda.
-                                </div>
-                            );
-                        }
-
-                        const operation = AUDIT_MAP[operationType];
+                        // Obtener información del sorteo
+                        const operation = AUDIT_MAP.WinnersSelected;
+                        const hasRecentDraw = auditData?.draws?.last;
 
                         return (
                             <div className="technical-operation">
                                 <div className="operation-header">
-                                    <span className="operation-badge">{operationType}</span>
-                                    <span className="operation-desc">{operation.description}</span>
+                                    <span className="operation-badge">Sorteo - Aleatoriedad</span>
+                                    <span className="operation-desc">
+                                        {hasRecentDraw
+                                            ? `Último sorteo ejecutado en ronda #${auditData.draws.last.args.round}`
+                                            : 'Cómo funciona la selección de ganadores'
+                                        }
+                                    </span>
                                 </div>
 
                                 <div className="code-block">
@@ -459,57 +447,73 @@ export function AuditModal({
                                     </div>
                                 </div>
 
-                                {/* NUEVO: Sección de Aleatoriedad (solo para sorteos) */}
-                                {operationType === 'WinnersSelected' && operation.randomness && (
-                                    <div className="randomness-section">
-                                        <h4>🎲 Algoritmo de Aleatoriedad (100% Verificable)</h4>
+                                {/* Sección de Aleatoriedad (SIEMPRE visible) */}
+                                <div className="randomness-section">
+                                    <h4>🎲 Algoritmo de Aleatoriedad (100% Verificable)</h4>
 
-                                        <div className="algorithm-block">
-                                            <div className="code-label">Generación del seed:</div>
-                                            <div className="code-content randomness-algo">{operation.randomness.algorithm}</div>
-                                            <button
-                                                className="copy-btn"
-                                                onClick={() => navigator.clipboard.writeText(operation.randomness.algorithm)}
-                                            >
-                                                📋 Copiar algoritmo
-                                            </button>
-                                        </div>
-
-                                        <div className="randomness-components">
-                                            <div className="components-title">Componentes (todos públicos):</div>
-                                            {operation.randomness.components.map((comp, idx) => (
-                                                <div key={idx} className="component-item">
-                                                    <div className="component-name">• {comp.name}</div>
-                                                    <div className="component-desc">{comp.description}</div>
-                                                    <div className="component-why">→ {comp.why}</div>
-                                                </div>
-                                            ))}
-                                        </div>
-
-                                        <div className="randomness-guarantees">
-                                            <div className="guarantees-title">✅ Garantías de No-Manipulación:</div>
-                                            {operation.randomness.guarantees.map((guarantee, idx) => (
-                                                <div key={idx} className="guarantee-item">
-                                                    ✓ {guarantee}
-                                                </div>
-                                            ))}
-                                        </div>
-
-                                        <div className="randomness-verification">
-                                            <strong>🔍 Cómo verificar que NO está amañado:</strong>
-                                            <ol>
-                                                <li>Copia el código del contrato desde el explorador</li>
-                                                <li>Busca la función <code>_selectWinners()</code></li>
-                                                <li>Pégalo en ChatGPT/Claude/Gemini</li>
-                                                <li>Pregunta: <em>"¿Puede el dueño manipular este sorteo?"</em></li>
-                                            </ol>
-                                            <p className="verification-answer">
-                                                <strong>Respuesta esperada:</strong> No, porque los valores (blockhash, timestamp, round)
-                                                son públicos, inmutables y no controlables por nadie.
-                                            </p>
-                                        </div>
+                                    <div className="algorithm-block">
+                                        <div className="code-label">Generación del seed:</div>
+                                        <div className="code-content randomness-algo">{operation.randomness.algorithm}</div>
+                                        <button
+                                            className="copy-btn"
+                                            onClick={() => navigator.clipboard.writeText(operation.randomness.algorithm)}
+                                        >
+                                            📋 Copiar algoritmo
+                                        </button>
                                     </div>
-                                )}
+
+                                    <div className="randomness-components">
+                                        <div className="components-title">Componentes (todos públicos):</div>
+                                        {operation.randomness.components.map((comp, idx) => (
+                                            <div key={idx} className="component-item">
+                                                <div className="component-name">• {comp.name}</div>
+                                                <div className="component-desc">{comp.description}</div>
+                                                <div className="component-why">→ {comp.why}</div>
+                                            </div>
+                                        ))}
+                                    </div>
+
+                                    <div className="randomness-guarantees">
+                                        <div className="guarantees-title">✅ Garantías de No-Manipulación:</div>
+                                        {operation.randomness.guarantees.map((guarantee, idx) => (
+                                            <div key={idx} className="guarantee-item">
+                                                ✓ {guarantee}
+                                            </div>
+                                        ))}
+                                    </div>
+
+                                    <div className="randomness-verification">
+                                        <strong>🔍 Cómo verificar que NO está amañado:</strong>
+                                        <ol>
+                                            <li>Copia el código del contrato desde el explorador</li>
+                                            <li>Busca la función <code>_selectWinners()</code></li>
+                                            <li>Pégalo en ChatGPT/Claude/Gemini</li>
+                                            <li>Pregunta: <em>"¿Puede el dueño manipular este sorteo?"</em></li>
+                                        </ol>
+                                        <p className="verification-answer">
+                                            <strong>Respuesta esperada:</strong> No, porque los valores (blockhash, timestamp, round)
+                                            son públicos, inmutables y no controlables por nadie.
+                                        </p>
+                                    </div>
+
+                                    {/* NUEVO: Ejemplo de pregunta para IA */}
+                                    <div className="ai-question-example">
+                                        <h5>💬 Pregunta Sugerida para IA Pública:</h5>
+                                        <div className="question-box">
+                                            <p>"Mira este código de aleatoriedad de un sorteo blockchain:</p>
+                                            <code>seed = keccak256(blockhash, timestamp, round)</code>
+                                            <p>¿Puede el dueño del contrato manipular estos valores para controlar quién gana?"</p>
+                                        </div>
+                                        <button
+                                            className="copy-btn copy-question"
+                                            onClick={() => navigator.clipboard.writeText(
+                                                `Mira este código de aleatoriedad de un sorteo blockchain:\n\nseed = keccak256(blockhash(block.number - 1), block.timestamp, currentRound)\n\n¿Puede el dueño del contrato manipular estos valores para controlar quién gana?\n\nExplica por qué sí o por qué no.`
+                                            )}
+                                        >
+                                            📋 Copiar pregunta para ChatGPT/Claude/Gemini
+                                        </button>
+                                    </div>
+                                </div>
 
                                 {/* Texto pedagógico CRÍTICO */}
                                 <div className="verification-notice">
