@@ -6,7 +6,7 @@ import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 
 /**
  * @title PoolChain Simple - Sin VRF
- * @notice Sistema de lotería con aleatoriedad de blockchain
+ * @notice Sistema de sorteo con aleatoriedad de blockchain
  * @dev Usa block.prevrandao para aleatoriedad (suficiente para pruebas)
  */
 contract PoolChain_Simple is ReentrancyGuard {

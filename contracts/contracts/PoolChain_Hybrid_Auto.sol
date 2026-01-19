@@ -9,7 +9,7 @@ import "@chainlink/contracts/src/v0.8/vrf/dev/libraries/VRFV2PlusClient.sol";
 import "@chainlink/contracts/src/v0.8/vrf/dev/interfaces/IVRFCoordinatorV2Plus.sol";
 /**
  * @title PoolChain_Hybrid_Auto  
- * @notice Sistema de lotería 100% automático con selección de posiciones
+ * @notice Sistema de sorteo 100% automático con selección de posiciones
  * @dev Combina lo mejor de ambos mundos:
  *      - Usuarios eligen posiciones específicas (1-100)
  *      - Sorteo completamente automático ejecutado por VRF callback

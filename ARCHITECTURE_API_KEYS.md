@@ -179,5 +179,5 @@ if (import.meta.env.PROD && process.env.REACT_APP_ALCHEMY_API_KEY_MICRO) {
 ---
 
 **Documento creado:** 2026-01-19  
-**Autor:** Antigravity AI  
+**Autor:** Sistema Editor Avanzado AI  
 **Estado:** Recomendación técnica
