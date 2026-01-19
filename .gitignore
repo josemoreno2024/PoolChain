@@ -47,3 +47,7 @@ wallets.json
 *.private.json
 contracts/scripts/wallets.json
 contracts/.env
+# Archivos de testing con datos sensibles
+contracts/archive/
+*.private.json
+test_wallets.json
