@@ -68,7 +68,7 @@ Los siguientes archivos deben incluir el header:
  * Hash: dd9d06efabd7271ae12576ee18803616c40464b1f8f9d24769232f23b7312292
  * Verificación: https://cipsc.coloriuris.net/tsa/
  * 
- * Licencia MIT (uso comercial restringido) | contacto@sandigital.com
+ * Licencia MIT (uso comercial restringido) | jose01.moreno@gmail.com
  * ═══════════════════════════════════════════════════════════════════
  */
 
